@@ -93,4 +93,4 @@ spec:
       restartPolicy: Never
   backoffLimit: 1
 ...
-{{ endif}}
+{{ end }}

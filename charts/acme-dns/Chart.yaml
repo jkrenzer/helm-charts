@@ -13,7 +13,7 @@ sources:
   - https://github.com/joohoi/acme-dns
 dependencies: []
 maintainers:
-  - name: Jörn Krenzer
+  - name: jkrenzer
     email: joern.krenzer@gmx.de
     url: https://github.com/jkrenzer
 appVersion: v1.0

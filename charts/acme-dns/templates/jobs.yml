@@ -5,7 +5,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ default (printf .Values.common.name "-job-createDb" ) .Values.jobs.createDb.name}}
+  name: {{ default (tpl "{{ .Values.common.name }}-job-createDb" $ ) .Values.jobs.createDb.name}}
   namespace: {{ .Values.common.namespace }}
   labels:
     {{- range $name, $value := .Values.common.labels}}
@@ -21,7 +21,7 @@ spec:
   ttlSecondsAfterFinished: {{ default 600 .Values.jobs.ttlSecondsAfterFinished }} 
   template:
     metadata:
-      name: {{ default (printf .Values.common.name "-job-createDb-pod" ) .Values.jobs.createDb.pod.name}}
+      name: {{ default (tpl "{{ .Values.common.name }}-job-createDb-pod" $ ) .Values.jobs.createDb.pod.name}}
       namespace: {{ .Values.common.namespace }}
       labels:
         {{- range $name, $value := .Values.common.labels}}
@@ -35,7 +35,7 @@ spec:
         {{- end}}
     spec:
       containers:
-      - name: {{ default (printf .Values.common.name "-job-createDb-container" ) .Values.jobs.createDb.container.name}}
+      - name: {{ default (tpl "{{ .Values.common.name }}-job-createDb-container" $ ) .Values.jobs.createDb.container.name}}
         image: postgres:12-alpine # A relatively small official image that can run psql
         command:
         - bash

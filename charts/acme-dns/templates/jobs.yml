@@ -1,3 +1,4 @@
+{{ if eq .Values.database.type "postgres" -}}
 {{- $AcmeConfigName := default (tpl "{{ .Values.common.name }}-config"  $ ) .Values.configMap.name -}}
 {{- $AcmeSecretName := default (tpl "{{ .Values.common.name }}-secrets" $ ) .Values.secret.name    -}}
 {{- $scripts        := default (tpl "{{ .Values.common.name }}-scripts" $ ) .Values.scripts.name   -}}
@@ -5,7 +6,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ default (tpl "{{ .Values.common.name }}-job-createDb" $ ) .Values.jobs.createDb.name}}
+  name: {{ default (tpl "{{ .Values.common.name }}-job-createdb" $ ) .Values.jobs.createDb.name}}
   namespace: {{ .Values.common.namespace }}
   labels:
     {{- range $name, $value := .Values.common.labels}}
@@ -17,11 +18,15 @@ metadata:
     {{- range $name, $value := .Values.jobs.createDb.labels}}
       {{ $name }}: {{ $value}}
     {{- end}}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: {{ default 600 .Values.jobs.ttlSecondsAfterFinished }} 
   template:
     metadata:
-      name: {{ default (tpl "{{ .Values.common.name }}-job-createDb-pod" $ ) .Values.jobs.createDb.pod.name}}
+      name: {{ default (tpl "{{ .Values.common.name }}-job-createdb-pod" $ ) .Values.jobs.createDb.pod.name}}
       namespace: {{ .Values.common.namespace }}
       labels:
         {{- range $name, $value := .Values.common.labels}}
@@ -35,7 +40,7 @@ spec:
         {{- end}}
     spec:
       containers:
-      - name: {{ default (tpl "{{ .Values.common.name }}-job-createDb-container" $ ) .Values.jobs.createDb.container.name}}
+      - name: {{ default (tpl "{{ .Values.common.name }}-job-createdb-container" $ ) .Values.jobs.createDb.container.name}}
         image: postgres:12-alpine # A relatively small official image that can run psql
         command:
         - bash
@@ -88,3 +93,4 @@ spec:
       restartPolicy: Never
   backoffLimit: 1
 ...
+{{ endif}}

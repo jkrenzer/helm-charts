@@ -1,4 +1,4 @@
-{{- if not lookup "v1" "Namespace" "" .Values.common.namespace -}}
+{{- if not (lookup "v1" "Namespace" "" .Values.common.namespace) -}}
 apiVersion: v1
 kind: Namespace
 metadata:

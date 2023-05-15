@@ -31,4 +31,3 @@ secret:
 service:
   selectors:
     app: acme-dns
-    

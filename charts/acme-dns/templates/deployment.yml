@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-deploy" $ ) .Values.deployment.name}}
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.deployment.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+spec:
+  replicas: {{ default 1 .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.pod.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+  template:
+    name: {{ default (tpl "{{ .Values.common.name }}-pod" $ ) .Values.pod.name}}
+    namespace: {{ .Values.common.namespace }}
+    labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.pod.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    spec:
+      containers:
+        - name: acme-dns
+          image: joohoi/acme-dns:{{ default "v1.0" .Values.nameserver.version }}
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - name: dns-port-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: dns-port-udp
+              containerPort: 53 
+              protocol: UDP
+            - name: http-port
+              containerPort: 80
+            - name: https-port
+              containerPort: 443
+          volumeMounts:
+            - mountPath: /etc/acme-dns
+              name: config-vol
+      volumes:
+        - name: config-vol
+          emptyDir: {}
+        - name: acme-dns-config
+          configMap:
+            name: acme-dns-config
+          

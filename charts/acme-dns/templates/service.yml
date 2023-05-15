@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-service" $ ) .Values.service.name}}
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.service.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      name: http-port
+      targetPort: http-port
+    - port: 53
+      protocol: TCP
+      name: dns-port-tcp
+      targetPort: dns-port-tcp
+    - port: 53 
+      protocol: UDP
+      name: dns-port-udp
+      targetPort: dns-port-udp
+  selector:
+    {{- range $name, $value := .Values.service.selectors}}
+      {{ $name }}: {{ $value}}
+    {{- end}}

@@ -1,0 +1,22 @@
+apiVersion: v2
+name: acme-dns
+version: 0.0.1
+kubeVersion: ""
+description: Simple ACME-DNS server helm chart
+type: application
+keywords:
+  - acme
+  - letsencrypt
+  - dns
+home: The URL of this projects home page (optional)
+sources:
+  - https://github.com/joohoi/acme-dns
+dependencies: []
+maintainers: 
+  - name: Jörn Krenzer
+    email: joern.krenzer@gmx.de
+    url: https://github.com/jkrenzer
+appVersion: v1.0
+icon: https://www.svgrepo.com/show/379134/dns.svg
+deprecated: false
+annotations: {}

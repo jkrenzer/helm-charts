@@ -12,7 +12,7 @@ home: The URL of this projects home page (optional)
 sources:
   - https://github.com/joohoi/acme-dns
 dependencies: []
-maintainers: 
+maintainers:
   - name: Jörn Krenzer
     email: joern.krenzer@gmx.de
     url: https://github.com/jkrenzer

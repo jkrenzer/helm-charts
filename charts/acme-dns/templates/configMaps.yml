@@ -15,7 +15,7 @@ data:
   DB_NAME: {{ $db_name        :=  default  "acme-dns"                       .Values.database.name          }}
   DB_HOST: {{ $db_host        :=  default  "localhost"                      .Values.database.host          }}
   DB_PORT: {{ $db_port        :=  default  "5432"                           .Values.database.port          }}
-  config.cfg.tpl: |-
+  config.cfg: |-
     {{- $db_user        :=  default  "acme-dns"                       .Values.database.user          -}}
     {{- $db_password    :=                                            .Values.database.password      -}}
     {{- $db_name        :=  default  "acme-dns"                       .Values.database.name          -}}

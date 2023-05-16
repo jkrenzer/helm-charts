@@ -48,12 +48,11 @@ spec:
             - name: https-port
               containerPort: 443
           volumeMounts:
-            - mountPath: /etc/acme-dns
-              name: config-vol
+            - mountPath: /etc/acme-dns/config.cfg
+              name: config
+              subPath: config.cfg
       volumes:
-        - name: config-vol
-          emptyDir: {}
-        - name: acme-dns-config
+        - name: config
           configMap:
-            name: acme-dns-config
+            name: {{ default (tpl "{{ .Values.common.name }}-config" $ ) .Values.configMap.name}}
           

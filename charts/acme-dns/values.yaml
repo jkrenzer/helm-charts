@@ -6,7 +6,12 @@ common:
 configMap:
   name: ""
 database:
+  # # For postgres SQL db
+  host: ""
+  port: ""
+  user: ""
   password: ""
+  type: sqlite3
 deployment:
   name: ""
 jobs:

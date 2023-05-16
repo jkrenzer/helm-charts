@@ -1,0 +1,101 @@
+apiVersion: v1
+data:
+  create-db.sh: |-
+    #!/bin/bash
+
+    if [ -z ${POSTGRES_HOST} ];
+    then
+      echo "POSTGRES_HOST not set. Using 'localhost'."
+      export POSTGRES_HOST=localhost
+    fi
+
+    if [ -z ${POSTGRES_PORT} ];
+    then
+      echo "POSTGRES_PORT not set. Using '5432'."
+      export POSTGRES_PORT=5432
+    fi
+
+    if [ -z ${POSTGRES_USER} ];
+    then
+      echo "POSTGRES_USER not set. Using 'postgres'."
+      export POSTGRES_USER=postgres
+    fi
+
+    if [ -z ${POSTGRES_PASSWORD} ];
+    then
+      echo "POSTGRES_PASSWORD not set. Trying password-less login."
+    else
+      echo "Setting PGPASSWORD env to $POSTGRES_PASSWORD."
+      export PGPASSWORD=${POSTGRES_PASSWORD}
+    fi 
+
+    if [ -z ${POSTGRES_DB} ];
+    then
+      echo "POSTGRES_DB not set. Using 'postgres'."
+      export POSTGRES_DB=postgres
+    fi
+
+    if [ -z ${USER_NAME} ];
+    then
+      echo "USER_NAME not set!"
+      exit 1
+    fi 
+
+    if [ -z ${USER_PASSWORD} ];
+    then
+      echo "USER_PASSWORD not set!"
+      exit 1
+    fi 
+
+    if [ -z ${DATABASE} ];
+    then
+      echo "DATABASE not set!"
+      exit 1
+    fi 
+
+    psql -U ${POSTGRES_USER} ${POSTGRES_DB} -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} --command="SELECT version();" >/dev/null 2>&1 
+
+    if [ $? -eq 0 ] 
+    then 
+      echo "Connection can be established."
+    else
+      echo "No connection to host $POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB with user $POSTGRES_USER possible. Exit code: $?"
+    exit 1
+    fi
+
+    psql -U ${POSTGRES_USER} ${DATABASE} -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} --command="SELECT version();" >/dev/null 2>&1
+
+    if [ $? -eq 0 ] 
+    then 
+      echo "Database exists already."
+      exit 0
+    else 
+      echo "Database does not exist. Creating it."
+
+      psql -v ON_ERROR_STOP=1 --username ${POSTGRES_USER} --dbname ${POSTGRES_DB} -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} <<-EOSQL
+      CREATE USER "${USER_NAME}" WITH PASSWORD '${USER_PASSWORD}';
+      CREATE DATABASE "${DATABASE}";
+      GRANT ALL 
+      PRIVILEGES ON DATABASE "${DATABASE}" TO "${USER_NAME}";
+    EOSQL
+
+      if [ $? -eq 0 ]
+      then
+        echo "Database $DATABASE created successfully!"
+        exit 0
+      else
+        echo "Unable to create $DATABASE as intended!"
+        exit 1
+      fi
+    fi
+kind: ConfigMap
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-scripts" $ ) .Values.scripts.name}}
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.scripts.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}

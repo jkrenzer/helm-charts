@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-pvc" $ ) .Values.pvc.name }}
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.pvc.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+spec:
+  storageClassName: {{ .Values.storage.storageClassName }}
+  volumeName: {{ default (tpl "{{ .Values.common.name }}-pv" $ ) .Values.pv.name }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ default "10Gi" .Values.storage.space }}

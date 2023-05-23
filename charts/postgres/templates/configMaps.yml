@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-config" $ ) .Values.configMap.name }}
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.configMap.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+data:
+  POSTGRES_DB: {{ .Values.database.defaultDbName }}
+  POSTGRES_USER: {{ .Values.database.user }}

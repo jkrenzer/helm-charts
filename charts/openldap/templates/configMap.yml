@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ tpl .Values.configMap.name}}
+  name: {{ tpl .Values.configMap.name . }}
   namespace: {{ .Values.common.namespace }}
   labels: {{ mustMerge .Values.configMap.labels .Values.common.labels | toYaml | nindent 4}}
 data:

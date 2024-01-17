@@ -21,11 +21,11 @@ deployment:
   replicas: 1
 persistentVolume:
   name: "{{ .Values.common.name }}-pv"
+  storageClassName: local-storage
   labels: {}
 persistentVolumeClaim:
   name: "{{ .Values.common.name }}-pvc"
   labels: {}
-  storageClassName: local-storage
   accessModes:
     - ReadWriteMany
   storage: 2Gi

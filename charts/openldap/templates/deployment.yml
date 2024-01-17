@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ tpl .Values.deployment.name }}
+  name: {{ tpl .Values.deployment.name . }}
   namespace: {{ .Values.common.namespace }}
   labels: {{ mustMerge .Values.deployment.labels .Values.common.labels | toYaml | nindent 4 }}
 spec:
@@ -10,13 +10,13 @@ spec:
     matchLabels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 6 }}
   template:
     metadata:
-      name: {{ tpl .Values.pod.name }}
+      name: {{ tpl .Values.pod.name . }}
       namespace: {{ .Values.common.namespace }}
       labels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 8 }}
     spec:
       containers:
         - name: openldap
-          image: tiredofit/openldap:{{ .Values.nameserver.version }}
+          image: tiredofit/openldap:{{ .Values.slapd.version }}
           imagePullPolicy: "IfNotPresent"
           ports: 
             - containerPort: 389
@@ -25,17 +25,17 @@ spec:
               name: ldaps-port
           envFrom:
             - configMapRef:
-                name: {{ tpl .Values.configMap.name }}
+                name: {{ tpl .Values.configMap.name . }}
           env:
             - name: ADMIN_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ tpl .Values.secret.name }}
+                  name: {{ tpl .Values.secret.name . }}
                   key: adminPass
             - name: CONFIG_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ tpl .Values.secret.name }}      
+                  name: {{ tpl .Values.secret.name . }}      
                   key: configPass
           volumeMounts:
             - mountPath: /var/lib/openldap
@@ -56,4 +56,4 @@ spec:
       volumes:
         - name: openldap-pv
           persistentVolumeClaim:
-            claimName: {{ tpl .Values.persitentVolumeClaim.name }}
+            claimName: {{ tpl .Values.persistentVolumeClaim.name . }}

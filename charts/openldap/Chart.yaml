@@ -16,7 +16,7 @@ maintainers:
   - name: jkrenzer
     email: joern.krenzer@gmx.de
     url: https://github.com/jkrenzer
-appVersion: v2.6
+appVersion: "2.6"
 icon: https://www.svgrepo.com/show/511864/directory-search-1623.svg
 deprecated: false
 annotations: {}

@@ -7,6 +7,8 @@ backup:
   md5: true
   parallelCompression: true
   path: /data/backup
+certSecret:
+  name: "{{ .Values.common.name }}-cert-secret"
 common:
   name: openldap
   namespace: openldap
@@ -42,13 +44,29 @@ service:
   name: "{{ .Values.common.name }}-service"
   labels: {}
   selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
-slapd:
-  domain: openldap
-  baseDn: dc=openldap
-  organization: openldap
-  schemaType: nis
-  logLevel: 256
+config:
+  domain: "openldap"
+  baseDn: "dc=openldap"
+  organization: "openldap"
+  schemaType: "nis"
+  logLevel: "256"
   logType: console
   enableTls: true
   enablePasswordPolicy: true
-  version: 2.6
+environmentVars:
+  DOMAIN: "{{ .Values.config.domain | quote }}"
+  BASE_DN: "{{ .Values.config.baseDn  | quote }}"
+  ORGANIZATION: "{{ .Values.config.organization | quote }}"
+  SCHEMA_TYPE: "{{ .Values.config.schemaType | quote }}"
+  LOG_LEVEL: "{{ .Values.config.logLevel | quote }}"
+  LOG_TYPE: "{{ .Values.config.logType | upper | quote }}"
+  ENABLE_BACKUP: "{{ .Values.backup.enable | toString | upper | quote }}"
+  BACKUP_LOCATION: "{{ .Values.backup.location | upper | quote }}"
+  BACKUP_COMPRESSION: "{{ .Values.backup.compression | upper | quote }}"
+  BACKUP_BEGIN: "{{ .Values.backup.beginTime | quote }}"
+  BACKUP_RETENTION: "{{ .Values.backup.retentionPeriod | quote }}"
+  BACKUP_MD5: "{{ .Values.backup.md5 | toString | upper | quote }}"
+  BACKUP_PARALLEL_COMPRESSION: "{{ .Values.backup.parallelCompression | toString | upper | quote }}"
+  BACKUP_PATH: "{{ .Values.backup.path | quote }}"
+  ENABLE_TLS: "{{ .Values.config.enableTls | toString | lower | quote }}"
+  ENABLE_PPOLICY: "{{ .Values.config.enablePasswordPolicy | toString | upper | quote }}"

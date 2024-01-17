@@ -5,20 +5,7 @@ metadata:
   namespace: {{ .Values.common.namespace }}
   labels: {{ mustMerge .Values.configMap.labels .Values.common.labels | toYaml | nindent 4}}
 data:
-  DOMAIN: {{ .Values.slapd.domain | quote }}
-  BASE_DN: {{ .Values.slapd.baseDn  | quote }}
-  ORGANIZATION: {{ .Values.slapd.organization | quote }}
-  SCHEMA_TYPE: {{ .Values.slapd.schemaType | quote }}
-  LOG_LEVEL: {{ .Values.slapd.logLevel | quote }}
-  LOG_TYPE: {{ .Values.slapd.logType | upper | quote }}
-  ENABLE_BACKUP: {{ .Values.backup.enable | toString | upper | quote }}
-  BACKUP_LOCATION: {{ .Values.backup.location | upper | quote }}
-  BACKUP_COMPRESSION: {{ .Values.backup.compression | upper | quote }}
-  BACKUP_BEGIN: {{ .Values.backup.beginTime | quote }}
-  BACKUP_RETENTION: {{ .Values.backup.retentionPeriod | quote }}
-  BACKUP_MD5: {{ .Values.backup.md5 | toString | upper | quote }}
-  BACKUP_PARALLEL_COMPRESSION: {{ .Values.backup.parallelCompression | toString | upper | quote }}
-  BACKUP_PATH: {{ .Values.backup.path | quote }}
-  ENABLE_TLS: {{ .Values.slapd.enableTls | toString | lower | quote }}
-  ENABLE_PPOLICY: {{ .Values.slapd.enablePasswordPolicy | toString | upper | quote }}
+  {{- range $name, $value := .Values.environmentVars }}
+    {{ $name | upper }}: {{ tpl $value $ }}
+  {{- end}}
   

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: openldap
-          image: tiredofit/openldap:{{ .Values.slapd.version }}
+          image: tiredofit/openldap:2.6
           imagePullPolicy: "IfNotPresent"
           ports: 
             - containerPort: 389

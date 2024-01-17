@@ -4,6 +4,7 @@ REM This Windows batch script ensures that the source mount points in devcontain
 
 setlocal enableextensions
 echo "Ensuring mount points exist..."
-md "%USERPROFILE%\.kube"
-md "%USERPROFILE%\.minikube"
+if not exist "%USERPROFILE%\.kube" md "%USERPROFILE%\.kube"
+if not exist "%USERPROFILE%\.minikube" md "%USERPROFILE%\.minikube"
 endlocal
+echo "Done."

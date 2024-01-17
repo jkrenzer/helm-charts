@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ tpl .Values.deployment.name }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.deployment.labels .Values.common.labels | toYaml | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 6 }}
+  template:
+    metadata:
+      name: {{ tpl .Values.pod.name }}
+      namespace: {{ .Values.common.namespace }}
+      labels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 8 }}
+    spec:
+      containers:
+        - name: openldap
+          image: tiredofit/openldap:{{ .Values.nameserver.version }}
+          imagePullPolicy: "IfNotPresent"
+          ports: 
+            - containerPort: 389
+              name: ldap-port
+            - containerPort: 636
+              name: ldaps-port
+          envFrom:
+            - configMapRef:
+                name: {{ tpl .Values.configMap.name }}
+          env:
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl .Values.secret.name }}
+                  key: adminPass
+            - name: CONFIG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl .Values.secret.name }}      
+                  key: configPass
+          volumeMounts:
+            - mountPath: /var/lib/openldap
+              name: openldap-pv
+              subPath: data
+            - mountPath: /etc/openldap/slapd.d
+              name: openldap-pv
+              subPath: config
+            - mountPath: /assets/custom-scripts
+              name: openldap-pv
+              subPath: custom-scripts
+            - mountPath: /certs/  
+              name: openldap-pv
+              subPath: certs
+            - mountPath: /data/backup
+              name: openldap-pv
+              subPath: backup
+      volumes:
+        - name: openldap-pv
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.persitentVolumeClaim.name }}

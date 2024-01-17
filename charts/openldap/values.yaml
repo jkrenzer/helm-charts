@@ -1,0 +1,54 @@
+backup:
+  enable: true
+  location: filesystem
+  compression: gz
+  beginTime: 0415
+  retentionPeriod: 144000
+  md5: true
+  parallelCompression: true
+  path: /data/backup
+common:
+  name: openldap
+  namespace: openldap
+  labels:
+    app: openldap
+configMap:
+  name: "{{ .Values.common.name }}-config"
+  labels: {}
+deployment:
+  name: "{{ .Values.common.name }}-deploy"
+  labels: {}
+  replicas: 1
+persistentVolume:
+  name: "{{ .Values.common.name }}-pv"
+  labels: {}
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+  storage: 2Gi
+pod:
+  name: "{{ .Values.common.name }}-pod"
+  labels: {}
+scripts:
+  name: "{{ .Values.common.name }}-scripts"
+  labels: {}
+secret:
+  name: "{{ .Values.common.name }}-secret"
+  labels: {}
+service:
+  name: "{{ .Values.common.name }}-service"
+  labels: {}
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
+slapd:
+  domain: openldap
+  baseDn: dc=openldap
+  organization: openldap
+  schemaType: nis
+  logLevel: 256
+  logType: console
+  enableTls: true
+  enablePasswordPolicy: true
+  version: 2.6

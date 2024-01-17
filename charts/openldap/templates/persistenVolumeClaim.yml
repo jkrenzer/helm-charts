@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ tpl .Values.persistantVolumeClaim.name }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.persistantVolumeClaim.labels .Values.common.labels | toYaml | nindent 4}}
+spec:
+  storageClassName: {{ tpl .Values.persistantVolume.storageClassName }}
+  volumeName: {{ tpl .Values.persistantVolume.name }}
+  accessModes: {{ .Values.persistantVolume.accessModes | toYaml | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistantVolume.storage }}

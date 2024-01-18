@@ -48,8 +48,13 @@ spec:
               name: pv
               subPath: custom-scripts
             - mountPath: /certs/  
-              name: certs
               readOnly: true
+              {{- if .Values.config.enableTls }}
+              name: certs
+              {{- else }}
+              name: pv
+              subPath: certs
+              {{- end }}
             - mountPath: /data/backup
               name: pv
               subPath: backup
@@ -57,6 +62,8 @@ spec:
         - name: pv
           persistentVolumeClaim:
             claimName: {{ tpl .Values.persistentVolumeClaim.name . }}
+        {{- if .Values.config.enableTls }}
         - name: certs
           secret:
             secretName: {{ tpl .Values.certSecret.name . }}
+        {{- end }}

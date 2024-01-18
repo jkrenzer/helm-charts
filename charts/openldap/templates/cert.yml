@@ -12,4 +12,5 @@ spec:
   issuerRef:
     name: {{ .Values.cert.issuer | required "You need to set .Values.cert.issuer to use cert-manager!" }}
   secretName: {{ tpl .Values.certSecret.name . }}
+  secretTemplate: {{ tpl ( .Values.certSecret.template ) . | nindent 4 }}
 {{ end }}

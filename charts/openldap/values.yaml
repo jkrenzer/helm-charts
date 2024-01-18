@@ -45,6 +45,8 @@ service:
   labels: {}
   selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
 config:
+  adminPassword: "{{ randAlphaNum 32 }}"
+  configPassword: "{{ randAlphaNum 32 }}"
   domain: "openldap"
   baseDn: "dc=openldap"
   organization: "openldap"

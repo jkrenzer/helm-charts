@@ -7,8 +7,16 @@ backup:
   md5: true
   parallelCompression: true
   path: /data/backup
+certManager:
+  enable: false
+cert:
+  name: "{{ .Values.common.name }}-cert"
+  dnsNames: []
+  issuer: null
+  labels: {}
 certSecret:
   name: "{{ .Values.common.name }}-cert-secret"
+  labels: {}
 common:
   name: openldap
   namespace: openldap
@@ -72,3 +80,7 @@ environmentVars:
   BACKUP_PATH: "{{ .Values.backup.path | quote }}"
   ENABLE_TLS: "{{ .Values.config.enableTls | toString | lower | quote }}"
   ENABLE_PPOLICY: "{{ .Values.config.enablePasswordPolicy | toString | upper | quote }}"
+
+# Override settings of dependencies
+cert-Manager:
+  installCRDs: true

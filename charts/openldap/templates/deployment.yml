@@ -31,29 +31,32 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ tpl .Values.secret.name . }}
-                  key: adminPass
+                  key: adminPassword
             - name: CONFIG_PASS
               valueFrom:
                 secretKeyRef:
                   name: {{ tpl .Values.secret.name . }}      
-                  key: configPass
+                  key: configPassword
           volumeMounts:
             - mountPath: /var/lib/openldap
-              name: openldap-pv
+              name: pv
               subPath: data
             - mountPath: /etc/openldap/slapd.d
-              name: openldap-pv
+              name: pv
               subPath: config
             - mountPath: /assets/custom-scripts
-              name: openldap-pv
+              name: pv
               subPath: custom-scripts
             - mountPath: /certs/  
-              name: openldap-pv
-              subPath: certs
+              name: certs
+              readOnly: true
             - mountPath: /data/backup
-              name: openldap-pv
+              name: pv
               subPath: backup
       volumes:
-        - name: openldap-pv
+        - name: pv
           persistentVolumeClaim:
             claimName: {{ tpl .Values.persistentVolumeClaim.name . }}
+        - name: certs
+          secret:
+            secretName: {{ tpl .Values.certSecret.name . }}

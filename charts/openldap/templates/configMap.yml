@@ -4,6 +4,7 @@ metadata:
   name: {{ tpl .Values.configMap.name . }}
   namespace: {{ .Values.common.namespace }}
   labels: {{ mustMerge .Values.configMap.labels .Values.common.labels | toYaml | nindent 4 }}
+  annotations: {{ mustMerge .Values.configMap.annotations .Values.common.annotations | toYaml | nindent 4 }}
 data:
   {{- range $name, $value := .Values.environmentVars }}
     {{ $name | upper }}: {{ tpl $value $ }}

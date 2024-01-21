@@ -4,6 +4,7 @@ metadata:
   name: {{ tpl .Values.service.name . }}
   namespace: {{ .Values.common.namespace }}
   labels: {{ mustMerge .Values.service.labels .Values.common.labels | toYaml | nindent 4}}
+  annotations: {{ mustMerge .Values.service.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:
   ports:
     - port: 389

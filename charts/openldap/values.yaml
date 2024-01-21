@@ -14,9 +14,11 @@ cert:
   dnsNames: []
   issuer: null
   labels: {}
+  annotations: {}
 certSecret:
   name: "{{ .Values.common.name }}-cert-secret"
   labels: {}
+  annotations: {}
   template: |
     labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
     test: null
@@ -25,35 +27,43 @@ common:
   namespace: openldap
   labels:
     app: openldap
+  annotations: {}
 configMap:
   name: "{{ .Values.common.name }}-config"
   labels: {}
+  annotations: {}
 deployment:
   name: "{{ .Values.common.name }}-deploy"
   labels: {}
+  annotations: {}
   replicas: 1
 persistentVolume:
   name: "{{ .Values.common.name }}-pv"
   storageClassName: local-storage
   labels: {}
+  annotations: {}
 persistentVolumeClaim:
   name: "{{ .Values.common.name }}-pvc"
   labels: {}
+  annotations: {}
   accessModes:
     - ReadWriteMany
   storage: 2Gi
 pod:
   name: "{{ .Values.common.name }}-pod"
   labels: {}
+  annotations: {}
 scripts:
   name: "{{ .Values.common.name }}-scripts"
   labels: {}
 secret:
   name: "{{ .Values.common.name }}-secret"
   labels: {}
+  annotations: {}
 service:
   name: "{{ .Values.common.name }}-service"
   labels: {}
+  annotations: {}
   selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
 config:
   adminPassword: "{{ randAlphaNum 32 }}"

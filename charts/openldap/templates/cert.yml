@@ -6,6 +6,7 @@ metadata:
   name: {{ tpl .Values.cert.name . }}
   namespace: {{ .Values.common.namespace }}
   labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 4 }}
+  annotations: {{ mustMerge .Values.cert.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:
   commonName: {{ .Values.config.domain }}
   dnsNames: {{ mustPrepend .Values.cert.dnsNames .Values.config.domain | toYaml | nindent 4 }}

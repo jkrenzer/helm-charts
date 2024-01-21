@@ -8,11 +8,11 @@ backup:
   parallelCompression: true
   path: /data/backup
 certManager:
-  enable: true
+  enable: false
 cert:
   name: "{{ .Values.common.name }}-cert"
   dnsNames: []
-  issuer: nx
+  issuer: null
   labels: {}
 certSecret:
   name: "{{ .Values.common.name }}-cert-secret"

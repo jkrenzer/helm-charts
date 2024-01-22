@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ tpl .Values.configMap.name . }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.configMap.labels .Values.common.labels | toYaml | nindent 4 }}
+  annotations: {{ mustMerge .Values.configMap.annotations .Values.common.annotations | toYaml | nindent 4 }}
+data:
+  {{- range $name, $value := .Values.environmentVars }}
+    {{ $name | upper }}: {{ tpl $value $ }}
+  {{- end}}
+{{ if .Values.config.kerberos.enable -}}
+---
+apiVersion: v1
+data:
+  krb5.conf: |-
+    [domain_realm]
+    .{{ .Values.config.kerberos.domain | required "config.kerberos.domain is required!"}} = {{ .Values.config.kerberos.domain | upper }}
+    {{ .Values.config.kerberos.domain }} = {{ .Values.config.kerberos.domain | upper }}
+kind: ConfigMap
+metadata:
+  name: {{ tpl .Values.kerberosConfigMap.name . }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.kerberosConfigMap.labels .Values.configMap.labels .Values.common.labels | toYaml | nindent 4 }}
+  annotations: {{ mustMerge .Values.kerberosConfigMap.annotations .Values.configMap.labels .Values.common.annotations | toYaml | nindent 4 }}
+type: Opaque
+{{ end -}}  

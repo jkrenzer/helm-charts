@@ -1,0 +1,104 @@
+---
+certManager:
+  enable: false
+cert:
+  name: "{{ .Values.common.name }}-cert"
+  dnsNames: []
+  issuer: null
+  labels: {}
+  annotations: {}
+certSecret:
+  name: "{{ .Values.common.name }}-cert-secret"
+  labels: {}
+  annotations: {}
+  template: |
+    labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
+    test: null
+common:
+  name: keycloak
+  namespace: keycloak
+  labels:
+    app: keycloak
+  annotations: {}
+configMap:
+  name: "{{ .Values.common.name }}-config"
+  labels: {}
+  annotations: {}
+deployment:
+  name: "{{ .Values.common.name }}-deploy"
+  labels: {}
+  annotations: {}
+  replicas: 1
+  resources:
+    limits:
+      memory: 4Gi
+      cpu: 1500m
+    requests:
+      memory: 2Gi
+      cpu: 600m
+kerberosConfigMap:
+  name: "{{ .Values.common.name }}-kerberos-config"
+  labels: {}
+  annotations: {}
+persistentVolume:
+  name: "{{ .Values.common.name }}-pv"
+  storageClassName: local-storage
+  labels: {}
+  annotations: {}
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  annotations: {}
+  accessModes:
+    - ReadWriteMany
+  storage: 15Gi
+pod:
+  name: "{{ .Values.common.name }}-pod"
+  labels: {}
+  annotations: {}
+scripts:
+  name: "{{ .Values.common.name }}-scripts"
+  labels: {}
+  annotations: {}
+secret:
+  name: "{{ .Values.common.name }}-secret"
+  labels: {}
+  annotations: {}
+service:
+  name: "{{ .Values.common.name }}-service"
+  labels: {}
+  annotations: {}
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
+config:
+  adminPassword: "{{ randAlphaNum 32 }}"
+  adminUser: "{{ randAlphaNum 8 }}"
+  domain: "keycloak"
+  logLevel: info
+  tls:
+    enable: true
+  smtp:
+    enable: false
+  db:
+    type: postgres
+    host: localhost
+    name: keycloak
+    user: ""
+    password: ""
+  kerberos:
+    enable: false
+  ldap:
+    enable: false
+    enable_tls: false
+    host: localhost
+environmentVars:
+  KC_PROXY: "edge"
+  KC_HOSTNAME: "auth.celtoi.org"
+  KC_DB: "{{ .Values.config.db.name | quote }}"
+  KC_DB_URL_HOST: "{{ .Values.config.db.host | quote }}"
+  KC_DB_URL_DATABASE: "{{ .Values.config.db.name | quote }}"
+  KC_DB_USERNAME: '{{ .Values.config.db.user | required ".config.db.user is required!" | quote }}'
+  KC_FEATURES: "admin-fine-grained-authz,client-secret-rotation,declarative-user-profile,recovery-codes,scripts,token-exchange,update-email"
+
+# Override settings of dependencies
+cert-Manager:
+  installCRDs: true

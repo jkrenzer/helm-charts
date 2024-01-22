@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: keycloak
+  name: keycloak
+  namespace: celtoi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - args: 
+            - start-dev
+            - "--spi-vault-file-key-resolvers=REALM_UNDERSCORE_KEY,KEY_ONLY"
+            {{ if .Values.config.tls.enable -}}
+            - "--https-certificate-file=/certs/tls.crt" 
+            - "--https-certificate-key-file=/certs/tls.key"
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: keycloak-config
+            - secretRef:
+                name: keycloak-secret
+          image: quay.io/keycloak/keycloak:23.0.4
+          name: keycloak
+          ports:
+            - containerPort: 8080
+              name: http
+            {{ if .Values.config.tls.enable -}}
+            - containerPort: 8443
+              name: https
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080
+          volumeMounts:
+            - mountPath: /opt/keycloak/data/import
+              name: keycloak-pv
+              subPath: import
+            - mountPath: /opt/keycloak/providers
+              name: keycloak-pv
+              subPath: providers
+            - mountPath: /opt/keycloak/themes
+              name: keycloak-pv
+              subPath: themes
+            - mountPath: /opt/keycloak/conf
+              name: keycloak-pv
+              subPath: conf
+            #- mountPath: /opt/keycloak/lib/quarkus
+            #  name: keycloak-pv
+            #  subPath: quarkus-state
+      securityContext:
+        runAsUser: 1000
+      volumes:
+        - name: keycloak-pv
+          persistentVolumeClaim:
+            claimName: keycloak-pvc

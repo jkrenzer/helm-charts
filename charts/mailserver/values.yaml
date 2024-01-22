@@ -1,0 +1,137 @@
+certManager:
+  enable: false
+cert:
+  name: "{{ .Values.common.name }}-cert"
+  dnsNames: []
+  issuer: null
+  labels: {}
+  annotations: {}
+certSecret:
+  name: "{{ .Values.common.name }}-cert-secret"
+  labels: {}
+  annotations: {}
+  template: |
+    labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
+    test: null
+common:
+  name: openldap
+  namespace: openldap
+  labels:
+    app: openldap
+  annotations: {}
+configMap:
+  name: "{{ .Values.common.name }}-config"
+  labels: {}
+  annotations: {}
+deployment:
+  name: "{{ .Values.common.name }}-deploy"
+  labels: {}
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: >-
+      'mailserver' needs to run as root
+    ignore-check.kube-linter.io/privileged-ports: >-
+      'mailserver' needs privilegdes ports
+    ignore-check.kube-linter.io/no-read-only-root-fs: >-
+      There are too many files written to make The
+      root FS read-only
+  replicas: 1
+  resources:
+    limits:
+      memory: 4Gi
+      cpu: 1500m
+    requests:
+      memory: 2Gi
+      cpu: 600m
+persistentVolume:
+  name: "{{ .Values.common.name }}-pv"
+  storageClassName: local-storage
+  labels: {}
+  annotations: {}
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  annotations: {}
+  accessModes:
+    - ReadWriteMany
+  storage: 15Gi
+pod:
+  name: "{{ .Values.common.name }}-pod"
+  labels: {}
+  annotations: {}
+scripts:
+  name: "{{ .Values.common.name }}-scripts"
+  labels: {}
+  annotations: {}
+secret:
+  name: "{{ .Values.common.name }}-secret"
+  labels: {}
+  annotations: {}
+service:
+  name: "{{ .Values.common.name }}-service"
+  labels: {}
+  annotations: {}
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
+config:
+  adminPassword: "{{ randAlphaNum 32 }}"
+  configPassword: "{{ randAlphaNum 32 }}"
+  domain: "openldap"
+  schemaType: "nis"
+  logLevel: info
+  supervisorLogLevel: info
+  enableTls: true
+  enablePasswordPolicy: true
+  postmaster: postmaster
+  ldap:
+    enable: false
+    enable_tls: false
+    baseDn: dc=mail
+    host: localhost
+  trustedHosts: |-
+    127.0.0.1
+    ::1
+    localhost
+    {{ .Values.config.domain }}
+environmentVars:
+  LOG_LEVEL: "{{ .Values.config.logLevel }}"
+  POSTSCREEN_ACTION: "drop"
+  OVERRIDE_HOSTNAME: "{{ .Values.config.domain }}"
+  FAIL2BAN_BLOCKTYPE: "drop"
+  POSTMASTER_ADDRESS: "{{ .Values.config.postmaster }}@{{ .Values.config.domain }}"
+  UPDATE_CHECK_INTERVAL: "7d"
+  POSTFIX_INET_PROTOCOLS: "ipv4"
+  ONE_DIR: "1"
+  ENABLE_CLAMAV: "1"
+  ENABLE_POSTGREY: "1"
+  ENABLE_FAIL2BAN: "0"
+  AMAVIS_LOGLEVEL: "-1"
+  SPOOF_PROTECTION: "1"
+  MOVE_SPAM_TO_JUNK: "1"
+  ENABLE_UPDATE_CHECK: "1"
+  ENABLE_SPAMASSASSIN: "1"
+  SUPERVISOR_LOGLEVEL: "{{ .Values.config.supervisorLogLevel }}"
+  SPAMASSASSIN_SPAM_TO_INBOX: "1"
+  # SSL/TLS
+  TLS_LEVEL: modern
+  SSL_TYPE: manual
+  SSL_CERT_PATH: /secrets/ssl/rsa/tls.crt
+  SSL_KEY_PATH: /secrets/ssl/rsa/tls.key
+  # LDAP
+  ACCOUNT_PROVISIONER: "{{ if .Values.config.ldap.enable }}LDAP{{ end }}"
+  ENABLE_LDAP: "{{ .Values.config.ldap.enable | int }}"
+  LDAP_START_TLS: "{{ if .Values.config.ldap.enable_tls }}yes{{ else }}no{{ end }}"
+  LDAP_RESULT_ATTRIBUTE: "mailLocalAddress, uid, mailMessageStore"
+  LDAP_SERVER_HOST: "{{ .Values.config.ldap.host}}"
+  LDAP_SEARCH_BASE: "{{ .Values.config.ldap.baseDn}}"
+  LDAP_QUERY_FILTER_USER: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(uid=%s)(mailLocalAddress=%s)))"
+  LDAP_QUERY_FILTER_GROUP: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(memberOf=cn=%u,ou=groups,{{ .Values.config.ldap.baseDn }}))"
+  LDAP_QUERY_FILTER_ALIAS: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(mailAlternateAddress=%s))"
+  LDAP_QUERY_FILTER_DOMAIN: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailLocalAddress=*@%s)(mailAlternateAddress=*@%s)))"
+  LDAP_QUERY_FILTER_SENDERS: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailAlternateAddress=%s)(mailLocalAddress=%s)))"
+  ENABLE_SASLAUTHD: "0"
+  DOVECOT_USER_FILTER: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailLocalAddress=%u)(uid=%u)))"
+  DOVECOT_PASS_ATTRS: "uid=user,userPassword=password"
+  DOVECOT_USER_ATTRS: "=home=/var/mail/vhome/%{ldap:mailMessageStore}/,=mail=maildir:/var/mail/vmail/%{ldap:mailMessageStore}/,=uid=5000,=gid=5000"
+
+# Override settings of dependencies
+cert-Manager:
+  installCRDs: true

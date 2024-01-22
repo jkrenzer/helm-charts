@@ -1,0 +1,32 @@
+common:
+  name: postgres
+  namespace: postgres
+  labels:
+    app: postgres
+configMap:
+  name: ""
+database:
+  user: postgres
+  password: ""
+  defaultDbName: postgres
+deployment:
+  name: ""
+pod:
+  labels:
+pv: {}
+pvc: {}
+scripts:
+  name: ""
+secret:
+  name: ""
+service:
+  port: 5432
+  name: postgres
+  selectors:
+    app: postgres
+storage:
+  local: {}
+  space: 10Gi
+  storageClassName: local-storage
+  hosts:
+  - localhost

@@ -1,0 +1,33 @@
+{
+    "name": "Pipx packages",
+    "id": "pipx-packages",
+    "version": "1.0.0",
+    "description": "Installs pipx packages.",
+    "documentationURL": "",
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/python"
+    ],
+    "options": {
+        "packages": {
+            "type": "string",
+            "proposals": [
+                "black"
+            ],
+            "default": "",
+            "description": "Select the pipx packages to install. Delimit with spaces. Versions can be appended with '=='."
+        },
+        "includeDeps": {
+            "default": false,
+            "description": "Include apps of dependent packages",
+            "type": "boolean"
+        },
+        "interpreter": {
+            "type": "string",
+            "proposals": [
+                "python3"
+            ],
+            "default": "",
+            "description": "Force python interpreter to be use (must already exists on the container). If none selected (the default) then python3 will be used (and will be installed in case it does not exists)"
+        }
+    }
+}

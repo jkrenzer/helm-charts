@@ -1,19 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: keycloak
-  name: keycloak
-  namespace: celtoi
+  name: {{ tpl .Values.deployment.name . }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.deployment.labels .Values.common.labels | toYaml | nindent 4 }}
+  annotations: {{ mustMerge .Values.deployment.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   selector:
-    matchLabels:
-      app: keycloak
+    matchLabels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 6 }}
   template:
     metadata:
-      labels:
-        app: keycloak
+      name: {{ tpl .Values.pod.name . }}
+      namespace: {{ .Values.common.namespace }}
+      labels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 8 }}
+      annotations: {{ mustMerge .Values.pod.annotations .Values.common.annotations | toYaml | nindent 8 }}
     spec:
       containers:
         - args: 

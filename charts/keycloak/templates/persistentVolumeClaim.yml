@@ -6,9 +6,9 @@ metadata:
   labels: {{ mustMerge .Values.persistentVolumeClaim.labels .Values.common.labels | toYaml | nindent 4}}
   annotations: {{ mustMerge .Values.persistentVolumeClaim.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:
-  storageClassName: {{ tpl .Values.persistentVolume.storageClassName . }}
+  storageClassName: {{ tpl .Values.storage.storageClassName . }}
   volumeName: {{ tpl .Values.persistentVolume.name . }}
-  accessModes: {{ .Values.persistentVolume.accessModes | toYaml | nindent 4 }}
+  accessModes: {{ .Values.storage.accessModes | toYaml | nindent 4 }}
   resources:
     requests:
-      storage: {{ .Values.persistentVolume.storage }}
+      storage: {{ .Values.storage.space }}

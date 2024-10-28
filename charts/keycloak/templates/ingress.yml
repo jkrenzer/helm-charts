@@ -1,13 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
-    cert-manager.io/issuer: letsencrypt-http-issuer
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  name: keycloak
-  namespace: celtoi
+  name: {{ tpl .Values.ingress.name . }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.ingress.labels .Values.common.labels | toYaml | nindent 4}}
+  annotations: {{ mustMerge .Values.ingress.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:
   rules:
     - host: auth.celtoi.org
@@ -21,7 +18,7 @@ spec:
                   number: 8080
                   {{ else -}}
                   number: 8443
-                  {{ end -}}
+                  {{- end }}
             path: /
             pathType: Prefix
   tls:

@@ -8,7 +8,7 @@ metadata:
 spec:
   storageClassName: {{ tpl .Values.persistentVolume.storageClassName . }}
   volumeName: {{ tpl .Values.persistentVolume.name . }}
-  accessModes: {{ .Values.persistentVolume.accessModes | toYaml | nindent 4 }}
+  accessModes: {{ .Values.persistentVolumeClaim.accessModes | toYaml | nindent 4 }}
   resources:
     requests:
-      storage: {{ .Values.persistentVolume.storage }}
+      storage: {{ .Values.persistentVolumeClaim.storage }}

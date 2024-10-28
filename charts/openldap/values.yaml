@@ -64,7 +64,7 @@ service:
   name: "{{ .Values.common.name }}-service"
   labels: {}
   annotations: {}
-  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
 config:
   adminPassword: "{{ randAlphaNum 32 }}"
   configPassword: "{{ randAlphaNum 32 }}"

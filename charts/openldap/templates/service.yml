@@ -15,4 +15,4 @@ spec:
       protocol: TCP
       name: ldaps-port
       targetPort: ldaps-port
-  selector: {{ tpl .Values.service.selectors . | toYaml | nindent 4}}
+  selector: {{ tpl .Values.service.selectors . | nindent 4 }}

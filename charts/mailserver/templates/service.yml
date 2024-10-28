@@ -26,4 +26,4 @@ spec:
       port: 993
       targetPort: imaps-port
       protocol: TCP
-  selector: {{ tpl .Values.service.selectors . | toYaml | nindent 4}}
+  selector: {{ tpl .Values.service.selectors . | nindent 4}}

@@ -11,7 +11,7 @@
         {
             "label": "Lint, install and test charts",
             "type": "shell",
-            "command": "ct lint-and-install --lint-conf .ct/lintconfig.yaml "
+            "command": "ct lint-and-install --lint-conf .ct/lintconfig.yaml"
         }
     ]
 }

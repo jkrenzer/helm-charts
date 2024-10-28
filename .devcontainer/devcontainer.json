@@ -53,6 +53,9 @@
 				"ms-kubernetes-tools.vscode-kubernetes-tools"
 			]
 		}
+	},
+	"containerEnv": {
+		"DEFAULT_HOSTNAME": "docker-desktop"
 	}
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

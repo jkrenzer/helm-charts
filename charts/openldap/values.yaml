@@ -1,6 +1,6 @@
 backup:
   enable: true
-  location: filesystem
+  location: Filesystem
   compression: gz
   beginTime: 0415
   retentionPeriod: 144000
@@ -38,17 +38,31 @@ deployment:
   annotations: {}
   replicas: 1
 persistentVolume:
+  create: true
   name: "{{ .Values.common.name }}-pv"
-  storageClassName: local-storage
   labels: {}
   annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
 persistentVolumeClaim:
   name: "{{ .Values.common.name }}-pvc"
   labels: {}
   annotations: {}
+storage:
+  local: {}
+  space: 2Gi
+  storageClassName: local-storage
   accessModes:
     - ReadWriteMany
-  storage: 2Gi
+  hosts:
+    - localhost
+storageClass:
+  create: true
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
 pod:
   name: "{{ .Values.common.name }}-pod"
   labels: {}

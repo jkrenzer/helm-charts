@@ -41,17 +41,29 @@ kerberosConfigMap:
   labels: {}
   annotations: {}
 persistentVolume:
+  create: true
   name: "{{ .Values.common.name }}-pv"
-  storageClassName: local-storage
   labels: {}
   annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
 persistentVolumeClaim:
   name: "{{ .Values.common.name }}-pvc"
   labels: {}
   annotations: {}
+storage:
+  local: {}
+  space: 10Gi
+  storageClassName: local-storage
   accessModes:
     - ReadWriteMany
-  storage: 15Gi
+storageClass:
+  create: true
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
 pod:
   name: "{{ .Values.common.name }}-pod"
   labels: {}
@@ -68,7 +80,15 @@ service:
   name: "{{ .Values.common.name }}-service"
   labels: {}
   annotations: {}
-  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels }}"
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+ingress:
+  name: "{{ .Values.common.name }}-ingress"
+  labels: {}
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http-issuer
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 config:
   adminPassword: "{{ randAlphaNum 32 }}"
   adminUser: "{{ randAlphaNum 8 }}"

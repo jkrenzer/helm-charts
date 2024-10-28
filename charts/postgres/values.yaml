@@ -1,6 +1,7 @@
 common:
   name: postgres
   namespace: postgres
+  annotations: {}
   labels:
     app: postgres
 configMap:
@@ -24,9 +25,29 @@ service:
   name: postgres
   selectors:
     app: postgres
+persistentVolume:
+  create: true
+  name: "{{ .Values.common.name }}-pv"
+  labels: {}
+  annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  annotations: {}
 storage:
   local: {}
   space: 10Gi
   storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
   hosts:
-  - localhost
+    - localhost
+storageClass:
+  create: true
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer

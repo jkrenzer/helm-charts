@@ -11,7 +11,7 @@ spec:
   commonName: {{ .Values.config.domain }}
   dnsNames: {{ mustPrepend .Values.cert.dnsNames .Values.config.domain | toYaml | nindent 4 }}
   issuerRef:
-    name: {{ .Values.cert.issuer | required "You need to set .Values.cert.issuer to use cert-manager!" }}
+    name: {{ tpl ( required "You need to set .Values.cert.issuer to use cert-manager!" .Values.cert.issuer ) . }}
   secretName: {{ tpl .Values.certSecret.name . }}
   secretTemplate: {{ tpl ( .Values.certSecret.template ) . | nindent 4 }}
 {{ end }}

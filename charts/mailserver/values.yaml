@@ -1,9 +1,13 @@
 certManager:
-  enable: false
+  enable: true
 cert:
   name: "{{ .Values.common.name }}-cert"
   dnsNames: []
-  issuer: null
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  annotations: {}
+certIssuer:
+  name: "{{ .Values.common.name }}-certIssuer"
   labels: {}
   annotations: {}
 certSecret:
@@ -43,17 +47,30 @@ deployment:
       memory: 2Gi
       cpu: 600m
 persistentVolume:
+  create: true
   name: "{{ .Values.common.name }}-pv"
-  storageClassName: local-storage
   labels: {}
   annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
 persistentVolumeClaim:
   name: "{{ .Values.common.name }}-pvc"
   labels: {}
   annotations: {}
+storage:
+  type: local
+  localPath: "/data/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
   accessModes:
     - ReadWriteMany
-  storage: 15Gi
+storageClass:
+  create: false
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
 pod:
   name: "{{ .Values.common.name }}-pod"
   labels: {}

@@ -11,7 +11,11 @@ keywords:
 home: https://docker-mailserver.github.io/docker-mailserver/v13.3/
 sources:
   - https://github.com/docker-mailserver/docker-mailserver
-dependencies: []
+dependencies:
+  - name: cert-manager
+    version: ~1.16.1
+    repository: https://charts.jetstack.io
+    condition: certManager.enable
 maintainers:
   - name: jkrenzer
     email: joern.krenzer@gmx.de

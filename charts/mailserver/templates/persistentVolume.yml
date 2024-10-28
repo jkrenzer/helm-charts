@@ -1,0 +1,34 @@
+{{- if .Values.persistentVolume.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ tpl .Values.persistentVolume.name . }}
+  namespace: {{ .Values.common.namespace }}
+  labels: {{ mustMerge .Values.persistentVolume.labels .Values.common.labels | toYaml | nindent 4}}
+  annotations: {{ mustMerge .Values.persistentVolume.annotations .Values.common.annotations | toYaml | nindent 4 }}
+spec:
+  capacity:
+    storage: {{ .Values.storage.space }}
+  volumeMode: {{ .Values.persistentVolume.volumeMode }}
+  accessModes: {{ .Values.storage.accessModes | toYaml | nindent 4 }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistentVolume.reclaimPolicy }}
+  storageClassName: {{ .Values.storage.storageClassName }}
+  {{- if .Values.storage.type | eq "local" }}
+  local: 
+    path: {{ tpl (required "Local storage path has to be configured!"  .Values.storage.localPath) . }}
+  {{- else }}
+    {{ fail "Unsupported storage type!" }}
+  {{- end }}
+  {{- if .Values.storage.hosts}}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          {{- range $host := .Values.storage.hosts }}
+          - {{ $host }}
+          {{- end }}
+  {{- end }}
+{{- end }}

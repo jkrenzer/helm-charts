@@ -82,8 +82,8 @@ config:
     type: postgres
     host: localhost
     name: keycloak
-    user: ""
-    password: ""
+    user: keycloak
+    password: "{{ randAlphaNum 32 }}"
   kerberos:
     enable: false
   ldap:

@@ -13,6 +13,9 @@ tags: str(required=False)
 deprecated: bool(required=False)
 kubeVersion: str(required=False)
 annotations: map(str(), str(), required=False)
+apiVersion: str(value='v2')
+dependencies: list(str(), required=False)
+type: str(required=True)
 ---
 maintainer:
   name: str()

@@ -1,6 +1,5 @@
 common:
   name: acme-dns
-  namespace: acme-dns
   labels:
     app: acme-dns
 configMap:

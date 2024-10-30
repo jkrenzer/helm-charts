@@ -16,7 +16,6 @@ certSecret:
     test: null
 common:
   name: keycloak
-  namespace: keycloak
   labels:
     app: keycloak
   annotations: {}
@@ -58,7 +57,7 @@ storage:
   accessModes:
     - ReadWriteMany
 storageClass:
-  create: true
+  create: false
   name: "{{ .Values.storage.storageClassName }}"
   labels: {}
   annotations: {}

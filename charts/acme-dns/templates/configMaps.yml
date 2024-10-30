@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ default (tpl "{{ .Values.common.name }}-config" $ ) .Values.configMap.name}}
-  namespace: {{ .Values.common.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
   {{- range $name, $value := .Values.common.labels}}
     {{ $name }}: {{ $value}}

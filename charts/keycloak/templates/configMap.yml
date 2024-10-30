@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ tpl .Values.configMap.name . }}
-  namespace: {{ .Values.common.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels: {{ mustMerge .Values.configMap.labels .Values.common.labels | toYaml | nindent 4 }}
   annotations: {{ mustMerge .Values.configMap.annotations .Values.common.annotations | toYaml | nindent 4 }}
 data:
@@ -21,7 +21,7 @@ data:
 kind: ConfigMap
 metadata:
   name: {{ tpl .Values.kerberosConfigMap.name . }}
-  namespace: {{ .Values.common.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels: {{ mustMerge .Values.kerberosConfigMap.labels .Values.configMap.labels .Values.common.labels | toYaml | nindent 4 }}
   annotations: {{ mustMerge .Values.kerberosConfigMap.annotations .Values.configMap.labels .Values.common.annotations | toYaml | nindent 4 }}
 type: Opaque

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: {{ tpl .Values.persistentVolume.name . }}
-  namespace: {{ .Values.common.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels: {{ mustMerge .Values.persistentVolume.labels .Values.common.labels | toYaml | nindent 4}}
   annotations: {{ mustMerge .Values.persistentVolume.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:

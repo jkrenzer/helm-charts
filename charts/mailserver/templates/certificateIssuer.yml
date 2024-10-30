@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ tpl .Values.certIssuer.name . }}
-  namespace: {{ .Values.common.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels: {{ mustMerge .Values.certIssuer.labels .Values.common.labels | toYaml | nindent 4 }}
   annotations: {{ mustMerge .Values.certIssuer.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:

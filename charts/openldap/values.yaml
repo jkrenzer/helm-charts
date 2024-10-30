@@ -24,7 +24,6 @@ certSecret:
     test: null
 common:
   name: openldap
-  namespace: openldap
   labels:
     app: openldap
   annotations: {}
@@ -57,7 +56,7 @@ storage:
   hosts:
     - localhost
 storageClass:
-  create: true
+  create: false
   name: "{{ .Values.storage.storageClassName }}"
   labels: {}
   annotations: {}

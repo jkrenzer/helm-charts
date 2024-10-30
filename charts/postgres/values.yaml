@@ -1,6 +1,5 @@
 common:
   name: postgres
-  namespace: postgres
   annotations: {}
   labels:
     app: postgres
@@ -45,7 +44,7 @@ storage:
   hosts:
     - localhost
 storageClass:
-  create: true
+  create: false
   name: "{{ .Values.storage.storageClassName }}"
   labels: {}
   annotations: {}

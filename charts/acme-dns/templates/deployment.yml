@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ default (tpl "{{ .Values.common.name }}-deploy" $ ) .Values.deployment.name}}
-  namespace: {{ .Values.common.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- range $name, $value := .Values.common.labels}}
       {{ $name }}: {{ $value}}
@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       name: {{ default (tpl "{{ .Values.common.name }}-pod" $ ) .Values.pod.name}}
-      namespace: {{ .Values.common.namespace }}
+      namespace: {{ .Release.Namespace }}
       labels:
       {{- range $name, $value := .Values.common.labels}}
         {{ $name }}: {{ $value}}

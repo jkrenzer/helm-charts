@@ -20,7 +20,6 @@ certSecret:
     labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
 common:
   name: mailserver
-  namespace: mailserver
   labels:
     app: mailserver
   annotations: {}

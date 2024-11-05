@@ -49,6 +49,13 @@ jobs:
           input: ${{ github.workspace }}/.github/config/kind.yaml
           output: ${{ github.workspace }}/kind-config.yaml
 
+      - name: Show kind config
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          echo "::group::File contents"
+          cat ${{ github.workspace }}/kind-config.yaml >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
+
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.4.0

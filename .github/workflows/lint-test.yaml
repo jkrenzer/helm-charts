@@ -42,7 +42,8 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --github-groups
 
-      - uses: danielr1996/envsubst-action@1.0.0
+      - name: Prepare kind config
+        uses: danielr1996/envsubst-action@1.0.0
         with:
           input: ${{ github.workspace }}/.github/config/kind.yaml
           output: ${{ github.workspace }}/kind-config.yaml

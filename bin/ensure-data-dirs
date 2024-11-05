@@ -1,0 +1,17 @@
+#!/bin/bash -e
+if [ ! -z "$CHARTS_DIR" ] && [ ! -z "$DATA_DIR" ];
+then
+for dir in $CHARTS_DIR/*
+do
+  dir=${dir%*/}      # remove the trailing "/"
+  name=${dir##*/}
+  data_dir=$DATA_DIR/$name
+  echo "Creating $data_dir"
+  mkdir -p $data_dir
+done
+echo "All data directories created"
+exit 0;
+else
+echo "\$CHARTS_DIR and \$DATA_DIR must be set first!"
+exit 1;
+fi

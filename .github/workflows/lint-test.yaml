@@ -6,6 +6,7 @@ env:
   WORKSPACE_DIR: ${{ github.workspace }}
   CHARTS_DIR: ${{ github.workspace }}/charts
   DATA_DIR: ${{ github.workspace }}/data
+  DATA_HOST: chart-testing-control-plane
 
 jobs:
   lint-test:
@@ -51,4 +52,4 @@ jobs:
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }} --github-groups --helm-extra-set-args "--set=storage.hosts={kind-worker} --set=storage.local.basePath=${{ env.DATA_DIR }}"
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} --github-groups --helm-extra-set-args "--set=storage.hosts={${{ env.DATA_HOST }}} --set=storage.local.basePath=${{ env.DATA_DIR }}"

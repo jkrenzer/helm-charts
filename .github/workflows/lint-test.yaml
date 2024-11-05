@@ -5,7 +5,7 @@ on: pull_request
 env:
   WORKSPACE_DIR: ${{ github.workspace }}
   CHARTS_DIR: ${{ github.workspace }}/charts
-  DATA_DIR: /data
+  DATA_DIR: ${{ github.workspace }}/data
 
 jobs:
   lint-test:

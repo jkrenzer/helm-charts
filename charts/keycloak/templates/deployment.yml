@@ -21,15 +21,15 @@ spec:
             - start-dev
             - "--spi-vault-file-key-resolvers=REALM_UNDERSCORE_KEY,KEY_ONLY"
             {{ if .Values.config.tls.enable -}}
-            - "--https-certificate-file=/certs/tls.crt" 
-            - "--https-certificate-key-file=/certs/tls.key"
+            - "--https-certificate-file=/secrets/ssl/rsa/tls.crt" 
+            - "--https-certificate-key-file=/secrets/ssl/rsa/tls.key"
             {{- end }}
           envFrom:
             - configMapRef:
                 name: keycloak-config
             - secretRef:
                 name: keycloak-secret
-          image: quay.io/keycloak/keycloak:23.0.4
+          image: quay.io/keycloak/keycloak:26.0.5
           name: keycloak
           ports:
             - containerPort: 8080
@@ -42,25 +42,40 @@ spec:
             httpGet:
               path: /realms/master
               port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 12
           volumeMounts:
             - mountPath: /opt/keycloak/data/import
-              name: keycloak-pv
+              name: pv
               subPath: import
             - mountPath: /opt/keycloak/providers
-              name: keycloak-pv
+              name: pv
               subPath: providers
             - mountPath: /opt/keycloak/themes
-              name: keycloak-pv
+              name: pv
               subPath: themes
             - mountPath: /opt/keycloak/conf
-              name: keycloak-pv
+              name: pv
               subPath: conf
-            #- mountPath: /opt/keycloak/lib/quarkus
-            #  name: keycloak-pv
-            #  subPath: quarkus-state
+            - mountPath: /secrets/ssl/rsa
+              readOnly: true
+              {{- if .Values.config.tls.enable }}
+              name: certs
+              {{- else }}
+              name: pv
+              subPath: certs
+              {{ end }}
       securityContext:
         runAsUser: 1000
       volumes:
-        - name: keycloak-pv
+        - name: pv
           persistentVolumeClaim:
-            claimName: keycloak-pvc
+            claimName: {{ tpl .Values.persistentVolumeClaim.name . }}
+        {{- if .Values.config.tls.enable }}
+        - name: certs
+          secret:
+            secretName: {{ tpl .Values.certSecret.name . }}
+        {{- end }}
+        - name: tmp-files
+          emptyDir: {}

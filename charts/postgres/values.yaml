@@ -7,7 +7,7 @@ configMap:
   name: ""
 database:
   user: postgres
-  password: ""
+  password: "{{ randAlphaNum 32 }}"
   defaultDbName: postgres
 deployment:
   name: ""
@@ -36,13 +36,14 @@ persistentVolumeClaim:
   labels: {}
   annotations: {}
 storage:
-  local: {}
+  type: local
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
   space: 10Gi
   storageClassName: local-storage
   accessModes:
     - ReadWriteMany
-  hosts:
-    - localhost
 storageClass:
   create: false
   name: "{{ .Values.storage.storageClassName }}"

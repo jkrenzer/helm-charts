@@ -59,7 +59,9 @@ persistentVolumeClaim:
   annotations: {}
 storage:
   type: local
-  localPath: "/data/{{ .Values.common.name }}"
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
   space: 10Gi
   storageClassName: local-storage
   accessModes:

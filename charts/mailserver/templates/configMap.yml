@@ -8,7 +8,9 @@ metadata:
 data:
 {{- range $name, $tpl_value := .Values.environmentVars }}
   {{ $value := tpl $tpl_value $ -}}
+  {{ if $value }}
   {{ $name | upper }}: {{ if $value | typeIs "string" }}{{ $value | quote }}{{ else }}{{ $value }}{{ end }}
-{{- end}}
+  {{ end }}
+{{- end }}
   TrustedHosts: |- {{ tpl .Values.config.trustedHosts . | nindent 4 }}
   

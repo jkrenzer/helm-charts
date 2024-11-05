@@ -1,10 +1,15 @@
 ---
 certManager:
-  enable: false
+  enable: true
 cert:
   name: "{{ .Values.common.name }}-cert"
   dnsNames: []
-  issuer: null
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  annotations: {}
+certIssuer:
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: "{{ .Values.common.name }}-issuer"
   labels: {}
   annotations: {}
 certSecret:
@@ -51,7 +56,10 @@ persistentVolumeClaim:
   labels: {}
   annotations: {}
 storage:
-  local: {}
+  type: local
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
   space: 10Gi
   storageClassName: local-storage
   accessModes:
@@ -98,10 +106,10 @@ config:
   smtp:
     enable: false
   db:
-    type: postgres
-    host: localhost
-    name: keycloak
-    user: keycloak
+    type: dev-file
+    host: null
+    name: null
+    user: null
     password: "{{ randAlphaNum 32 }}"
   kerberos:
     enable: false
@@ -111,12 +119,12 @@ config:
     host: localhost
 environmentVars:
   KC_PROXY: "edge"
-  KC_HOSTNAME: "auth.celtoi.org"
-  KC_DB: "{{ .Values.config.db.name | quote }}"
+  KC_HOSTNAME: "{{ .Values.config.domain | quote }}"
+  KC_DB: '{{ .Values.config.db.type | required ".config.db.type is required!" | quote }}'
   KC_DB_URL_HOST: "{{ .Values.config.db.host | quote }}"
   KC_DB_URL_DATABASE: "{{ .Values.config.db.name | quote }}"
-  KC_DB_USERNAME: '{{ .Values.config.db.user | required ".config.db.user is required!" | quote }}'
-  KC_FEATURES: "admin-fine-grained-authz,client-secret-rotation,declarative-user-profile,recovery-codes,scripts,token-exchange,update-email"
+  KC_DB_USERNAME: "{{ .Values.config.db.user | quote }}"
+  KC_FEATURES: "preview"
 
 # Override settings of dependencies
 cert-Manager:

@@ -15,7 +15,7 @@ spec:
   storageClassName: {{ .Values.storage.storageClassName }}
   {{- if .Values.storage.type | eq "local" }}
   local: 
-    path: {{ tpl (required "Local storage path has to be configured!"  .Values.storage.localPath) . }}
+    path: {{ tpl (required "Local storage path has to be configured!"  .Values.storage.local.path) . }}
   {{- else }}
     {{ fail "Unsupported storage type!" }}
   {{- end }}

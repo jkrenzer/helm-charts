@@ -7,7 +7,7 @@ metadata:
   annotations: {{ mustMerge .Values.ingress.annotations .Values.common.annotations | toYaml | nindent 4 }}
 spec:
   rules:
-    - host: auth.celtoi.org
+    - host: {{ .Values.config.domain }}
       http:
         paths:
           - backend:
@@ -23,5 +23,5 @@ spec:
             pathType: Prefix
   tls:
     - hosts:
-        - auth.celtoi.org
-      secretName: auth-celtoi-org-tls
+        - {{ .Values.config.domain }}
+      secretName: {{ tpl .Values.certSecret.name . }}

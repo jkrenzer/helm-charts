@@ -8,11 +8,16 @@ backup:
   parallelCompression: true
   path: /data/backup
 certManager:
-  enable: false
+  enable: true
 cert:
   name: "{{ .Values.common.name }}-cert"
   dnsNames: []
-  issuer: null
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  annotations: {}
+certIssuer:
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: "{{ .Values.common.name }}-issuer"
   labels: {}
   annotations: {}
 certSecret:
@@ -48,13 +53,14 @@ persistentVolumeClaim:
   labels: {}
   annotations: {}
 storage:
-  local: {}
-  space: 2Gi
+  type: local
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
   storageClassName: local-storage
   accessModes:
     - ReadWriteMany
-  hosts:
-    - localhost
 storageClass:
   create: false
   name: "{{ .Values.storage.storageClassName }}"

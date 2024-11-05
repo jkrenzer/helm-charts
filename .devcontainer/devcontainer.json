@@ -34,16 +34,14 @@
 		"SYNC_LOCALHOST_KUBECONFIG": "true"
 	},
 	"initializeCommand": "cd .devcontainer && bash ensure-mount-sources",
+	"postStartCommand": "cd bin && bash ensure-data-dirs && sleep 5s && kubectl api-versions",
 	"mounts": [
-		{
-			"source": "${env:HOME}${env:USERPROFILE}/.kube",
-			"target": "/usr/local/share/kube-localhost",
-			"type": "bind"
-		},
+		"source=${env:HOME}${env:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind,readonly",
 		// Optional mount to also sync certs in your .minikube folder
+		"source=${env:HOME}${env:USERPROFILE}/.minikube,target=/usr/local/share/minikube-localhost,type=bind,readonly",
 		{
-			"source": "${env:HOME}${env:USERPROFILE}/.minikube",
-			"target": "/usr/local/share/minikube-localhost",
+			"source": "/run/desktop/mnt/host/wsl",
+			"target": "/mnt/wsl",
 			"type": "bind"
 		}
 	],
@@ -55,7 +53,11 @@
 		}
 	},
 	"containerEnv": {
-		"DEFAULT_HOSTNAME": "docker-desktop"
+		"DEFAULT_HOSTNAME": "docker-desktop",
+		// Needed by scripts
+		"WORKSPACE_DIR": "${containerWorkspaceFolder}",
+		"CHARTS_DIR": "${containerWorkspaceFolder}/charts",
+		"DATA_DIR": "/mnt/wsl/data"
 	}
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

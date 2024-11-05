@@ -44,10 +44,10 @@ jobs:
 
       - name: Prepare kind config
         if: steps.list-changed.outputs.changed == 'true'
-        uses: danielr1996/envsubst-action@1.0.0
+        uses: cuchi/jinja2-action@v1.2.2
         with:
-          input: ${{ github.workspace }}/.github/config/kind.yaml
-          output: ${{ github.workspace }}/kind-config.yaml
+          template: ${{ github.workspace }}/.github/config/kind.yaml.j2
+          output_file: ${{ github.workspace }}/kind-config.yaml
 
       - name: Show kind config
         if: steps.list-changed.outputs.changed == 'true'

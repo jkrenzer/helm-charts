@@ -46,7 +46,7 @@ jobs:
 
       - name: Prepare tests
         if: steps.list-changed.outputs.changed == 'true'
-        run: cd ${{ github.workspace }}/bin && prepare-tests
+        run: cd ${{ github.workspace }}/bin && ./prepare-tests
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

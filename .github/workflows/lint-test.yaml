@@ -2,6 +2,10 @@ name: Lint and Test Charts
 
 on: pull_request
 
+env:
+  CHARTS_DIR: ${{ github.workspace }}/charts
+  DATA_DIR: /data
+
 jobs:
   lint-test:
     runs-on: ubuntu-latest
@@ -27,19 +31,23 @@ jobs:
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
-          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
+          changed=$(ct list-changed --target-branch ${{ github.head_ref || github.ref_name }})
           if [[ -n "$changed" ]]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run chart-testing (lint)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --github-groups
+        run: ct lint --target-branch ${{ github.head_ref || github.ref_name }} --github-groups --set=storage.local.basePath=${{ env.DATA_DIR }}
 
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.4.0
 
+      - name: Prepare
+        if: steps.list-changed.outputs.changed == 'true'
+        run: cd bin && ensure-data-dirs
+
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }} --github-groups
+        run: ct install --target-branch ${{ github.head_ref || github.ref_name }} --github-groups --set=storage.local.basePath=${{ env.DATA_DIR }}

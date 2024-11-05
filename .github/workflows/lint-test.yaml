@@ -42,9 +42,16 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --github-groups
 
+      - uses: danielr1996/envsubst-action@1.0.0
+        with:
+          input: ${{ github.workspace }}/.github/config/kind.yaml
+          output: ${{ github.workspace }}/kind-config.yaml
+
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.4.0
+        with:
+          config: ${{ github.workspace }}/kind-config.yaml
 
       - name: Prepare tests
         if: steps.list-changed.outputs.changed == 'true'
@@ -52,4 +59,4 @@ jobs:
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }} --github-groups --helm-extra-set-args "--set=storage.hosts={${{ env.DATA_HOST }}} --set=storage.local.basePath=${{ env.DATA_DIR }}"
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} --github-groups --helm-extra-set-args "--set=storage.hosts={${{ env.DATA_HOST }}} --set=storage.local.basePath=/data"

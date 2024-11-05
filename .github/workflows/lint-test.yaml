@@ -4,8 +4,8 @@ on: pull_request
 
 env:
   WORKSPACE_DIR: ${{ github.workspace }}
-  CHARTS_DIR: ${{ github.workspace }}/charts
-  DATA_DIR: ${{ github.workspace }}/data
+  CHARTS_DIR: ${{ env.WORKSPACE_DIR }}/charts
+  DATA_DIR: ${{ env.WORKSPACE_DIR }}/data
   DATA_HOST: chart-testing-control-plane
 
 jobs:

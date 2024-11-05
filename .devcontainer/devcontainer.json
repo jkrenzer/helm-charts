@@ -28,12 +28,15 @@
 		"ghcr.io/devcontainers/features/python:1": {
 			"installTools": true,
 			"version": "latest"
+		},
+		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+			"packages": "git-lfs"
 		}
 	},
 	"remoteEnv": {
 		"SYNC_LOCALHOST_KUBECONFIG": "true"
 	},
-	"initializeCommand": "cd .devcontainer && bash ensure-mount-sources",
+	"initializeCommand": "cd .devcontainer && bash ensure-mount-sources && git lfs install",
 	"postStartCommand": "cd bin && bash ensure-data-dirs && sleep 5s && kubectl api-versions",
 	"mounts": [
 		"source=${env:HOME}${env:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind,readonly",

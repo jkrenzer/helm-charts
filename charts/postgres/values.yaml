@@ -1,0 +1,53 @@
+common:
+  name: postgres
+  annotations: {}
+  labels:
+    app: postgres
+configMap:
+  name: ""
+database:
+  user: postgres
+  password: "{{ randAlphaNum 32 }}"
+  defaultDbName: postgres
+deployment:
+  name: ""
+pod:
+  labels:
+pv: {}
+pvc: {}
+scripts:
+  name: ""
+secret:
+  name: ""
+service:
+  port: 5432
+  name: postgres
+  selectors:
+    app: postgres
+persistentVolume:
+  create: true
+  name: "{{ .Values.common.name }}-pv"
+  labels: {}
+  annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  annotations: {}
+storage:
+  type: local
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+storageClass:
+  create: false
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer

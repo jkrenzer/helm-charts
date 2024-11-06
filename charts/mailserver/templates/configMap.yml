@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ tpl .Values.configMap.name . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{ mustMerge .Values.configMap.labels .Values.common.labels | toYaml | nindent 4 }}
+  annotations: {{ mustMerge .Values.configMap.annotations .Values.common.annotations | toYaml | nindent 4 }}
+data:
+{{- range $name, $tpl_value := .Values.environmentVars }}
+  {{ $value := tpl $tpl_value $ -}}
+  {{ if $value }}
+  {{ $name | upper }}: {{ if $value | typeIs "string" }}{{ $value | quote }}{{ else }}{{ $value }}{{ end }}
+  {{ end }}
+{{- end }}
+  TrustedHosts: |- {{ tpl .Values.config.trustedHosts . | nindent 4 }}
+  

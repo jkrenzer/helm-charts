@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-config" $ ) .Values.configMap.name}}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- range $name, $value := .Values.common.labels}}
+    {{ $name }}: {{ $value}}
+  {{- end}}
+  {{- range $name, $value := .Values.configMap.labels}}
+    {{ $name }}: {{ $value}}
+  {{- end}}
+data:
+  DB_USER: {{ $db_user        :=  default  "acme-dns"                       .Values.database.user          }}
+  DB_NAME: {{ $db_name        :=  default  "acme-dns"                       .Values.database.name          }}
+  DB_HOST: {{ $db_host        :=  default  "localhost"                      .Values.database.host          }}
+  DB_PORT: {{ $db_port        :=  default  "5432"                           .Values.database.port          }}
+  config.cfg: |-
+    {{- $db_user        :=  default  "acme-dns"                       .Values.database.user          -}}
+    {{- $db_password    :=                                            .Values.database.password      -}}
+    {{- $db_name        :=  default  "acme-dns"                       .Values.database.name          -}}
+    {{- $db_host        :=  default  "localhost"                      .Values.database.host          -}}
+    {{- $db_type        :=  default  "sqlite3"                        .Values.database.type          -}}
+    {{- $db_port        :=  default  "5432"                           .Values.database.port          -}}
+    {{- $db_path        :=  default  "/var/lib/acme-dns/acme-dns.db"  .Values.database.path          -}}
+    {{- $db_ssl         :=  default true                              .Values.database.ssl           -}}
+    {{- $db_settings    :=  list ""                                                                  -}}
+    {{- $ns_domain      :=                                            .Values.nameserver.domain      -}}
+    {{- $ns_fqdn        :=                                            .Values.nameserver.fqdn        -}}
+    {{- $ns_admin       :=                                            .Values.nameserver.admin       -}}
+    {{- $ns_listen_ip   :=  default "0.0.0.0"                         .Values.nameserver.listenIp    -}}
+    {{- $ns_public_ip4  :=                                            .Values.nameserver.public.ipV4 -}}
+    {{- $ns_public_ip6  :=                                            .Values.nameserver.public.ipV6 -}}
+    {{- $ns_listen_port :=  default "53"                              .Values.nameserver.listenPort  -}}
+    {{- $ns_protocol    :=  default "both"                            .Values.nameserver.protocol    -}}
+    {{- $debug          :=  default false                             .Values.nameserver.debug       -}}
+    {{- $loglevel       :=  default "warning"                         .Values.nameserver.loglevel    -}}
+    {{- if not $db_ssl -}}
+    {{- $db_settings = ( $db_settings | append "sslmode=disable" ) -}}
+    {{- end }}
+    [general]
+    # DNS interface. Note that systemd-resolved may reserve port 53 on 127.0.0.53
+    # In this case acme-dns will error out and you will need to define the listening interface
+    # for example: listen = "127.0.0.1:53"
+    listen = "{{ $ns_listen_ip -}}:{{- $ns_listen_port -}}"
+    # protocol, "both", "both4", "both6", "udp", "udp4", "udp6" or "tcp", "tcp4", "tcp6"
+    protocol = "{{- $ns_protocol -}}"
+    # domain name to serve the requests off of
+    domain = "{{- $ns_domain -}}"
+    # zone name server
+    nsname = "{{- $ns_fqdn -}}"
+    # admin email address, where @ is substituted with .
+    nsadmin = "{{- $ns_admin -}}"
+    # predefined records served in addition to the TXT
+    records = [
+        # domain pointing to the public IP of your acme-dns server 
+        "{{- $ns_domain -}}. A {{ $ns_public_ip4 -}}",
+        {{- if $ns_public_ip6 -}}
+        "{{- $ns_domain -}}. AAAA {{ $ns_public_ip6 -}}",
+        {{- end -}}
+        # specify that auth.example.org will resolve any *.auth.example.org records
+        "{{- $ns_domain -}}. NS {{ $ns_domain -}}.",
+    ]
+    # debug messages from CORS etc
+    debug = {{ printf "%t" $debug }}
+
+    [database]
+    {{ if eq $db_type "postgres" -}}
+    engine = "postgres"
+    connection = "postgres://{{- $db_user -}}:{{- $db_password -}}@{{- $db_host -}}:{{- $db_port -}}/{{- $db_name -}}?{{- join $db_settings "&" -}}"
+    {{ else -}}
+    engine = "sqlite3"
+    connection = "{{ $db_path }}"
+    {{ end -}}
+
+    [api]
+    # listen ip eg. 127.0.0.1
+    ip = "0.0.0.0"
+    # disable registration endpoint
+    disable_registration = false
+    # listen port, eg. 443 for default HTTPS
+    port = "80"
+    # possible values: "letsencrypt", "letsencryptstaging", "cert", "none"
+    tls = "none"
+    # only used if tls = "cert"
+    tls_cert_privkey = "/etc/tls/example.org/privkey.pem"
+    tls_cert_fullchain = "/etc/tls/example.org/fullchain.pem"
+    # only used if tls = "letsencrypt"
+    acme_cache_dir = "api-certs"
+    # optional e-mail address to which Let's Encrypt will send expiration notices for the API's cert
+    notification_email = ""
+    # CORS AllowOrigins, wildcards can be used
+    corsorigins = [
+        "*"
+    ]
+    # use HTTP header to get the client ip
+    use_header = false
+    # header name to pull the ip address / list of ip addresses from
+    header_name = "X-Forwarded-For"
+
+    [logconfig]
+    # logging level: "error", "warning", "info" or "debug"
+    loglevel = "debug"
+    # possible values: stdout, TODO file & integrations
+    logtype = "stdout"
+    # file path for logfile TODO
+    # logfile = "./acme-dns.log"
+    # format, either "json" or "text"
+    logformat = "text"
+
+  
+  

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-deploy" $ ) .Values.deployment.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.deployment.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+spec:
+  replicas: {{ default 1 .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      {{- range $name, $value := .Values.common.labels}}
+        {{ $name }}: {{ $value}}
+      {{- end}}
+      {{- range $name, $value := .Values.pod.labels}}
+        {{ $name }}: {{ $value}}
+      {{- end}}
+  template:
+    metadata:
+      name: {{ default (tpl "{{ .Values.common.name }}-pod" $ ) .Values.pod.name }}
+      namespace: {{ .Release.Namespace }}
+      labels:
+        {{- range $name, $value := .Values.common.labels}}
+          {{ $name }}: {{ $value}}
+        {{- end}}
+        {{- range $name, $value := .Values.pod.labels}}
+          {{ $name }}: {{ $value}}
+        {{- end}}
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:{{ .Chart.AppVersion }}
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: {{ .Values.service.name }}
+          envFrom:
+            - configMapRef:
+                name: {{ default (tpl "{{ .Values.common.name }}-config" $ ) .Values.configMap.name }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (tpl "{{ .Values.common.name }}-secrets" $ ) .Values.secret.name }}
+                  key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-pv
+              subPath: data
+            - mountPath: /docker-entrypoint-initdb.d
+              name: postgres-pv
+              subPath: init-scripts
+      volumes:
+        - name: postgres-pv
+          persistentVolumeClaim:
+            claimName: {{ default (tpl "{{ .Values.common.name }}-pvc" $ ) .Values.pvc.name }}
+      securityContext:
+        fsGroup: 70

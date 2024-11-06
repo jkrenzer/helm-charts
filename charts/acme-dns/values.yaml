@@ -1,0 +1,37 @@
+common:
+  name: acme-dns
+  labels:
+    app: acme-dns
+configMap:
+  name: ""
+database:
+  # # For postgres SQL db
+  host: ""
+  port: ""
+  user: ""
+  password: ""
+  type: sqlite3
+deployment:
+  name: ""
+jobs:
+  createDb:
+    container:
+      name: ""
+    name: ""
+    pod:
+      name: ""
+nameserver:
+  listenIp: 0.0.0.0
+  public:
+    ipV4:
+    ipV6:
+  version: v1.0
+pod:
+  labels:
+scripts:
+  name: ""
+secret:
+  name: ""
+service:
+  selectors:
+    app: acme-dns

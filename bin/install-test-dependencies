@@ -1,0 +1,20 @@
+#!/bin/bash -e
+if [ ! -z "$WORKSPACE_DIR" ];
+then
+# Install helm dependencies
+## Cert-Manager
+helm repo add jetstack https://charts.jetstack.io --force-update
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.16.1 \
+  --set crds.enabled=true
+# Install Kubernetes dependencies
+## StorageClass local-storage
+kubectl apply -f ${WORKSPACE_DIR}/test/deps/storageClass.yaml
+exit 0;
+else
+echo "\$WORKSPACE_DIR must be set first!"
+exit 1;
+fi

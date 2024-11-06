@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ tpl .Values.ingress.name . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{ mustMerge .Values.ingress.labels .Values.common.labels | toYaml | nindent 4}}
+  annotations: {{ mustMerge .Values.ingress.annotations .Values.common.annotations | toYaml | nindent 4 }}
+spec:
+  rules:
+    - host: {{ .Values.config.domain }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: keycloak
+                port:
+                  {{ if .Values.config.tls.enable -}}
+                  number: 8080
+                  {{ else -}}
+                  number: 8443
+                  {{- end }}
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - {{ .Values.config.domain }}
+      secretName: {{ tpl .Values.certSecret.name . }}

@@ -1,0 +1,131 @@
+---
+certManager:
+  enable: true
+cert:
+  name: "{{ .Values.common.name }}-cert"
+  dnsNames: []
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  annotations: {}
+certIssuer:
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: "{{ .Values.common.name }}-issuer"
+  labels: {}
+  annotations: {}
+certSecret:
+  name: "{{ .Values.common.name }}-cert-secret"
+  labels: {}
+  annotations: {}
+  template: |
+    labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
+    test: null
+common:
+  name: keycloak
+  labels:
+    app: keycloak
+  annotations: {}
+configMap:
+  name: "{{ .Values.common.name }}-config"
+  labels: {}
+  annotations: {}
+deployment:
+  name: "{{ .Values.common.name }}-deploy"
+  labels: {}
+  annotations: {}
+  replicas: 1
+  resources:
+    limits:
+      memory: 4Gi
+      cpu: 1500m
+    requests:
+      memory: 2Gi
+      cpu: 600m
+kerberosConfigMap:
+  name: "{{ .Values.common.name }}-kerberos-config"
+  labels: {}
+  annotations: {}
+persistentVolume:
+  create: true
+  name: "{{ .Values.common.name }}-pv"
+  labels: {}
+  annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  annotations: {}
+storage:
+  type: local
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+storageClass:
+  create: false
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+pod:
+  name: "{{ .Values.common.name }}-pod"
+  labels: {}
+  annotations: {}
+scripts:
+  name: "{{ .Values.common.name }}-scripts"
+  labels: {}
+  annotations: {}
+secret:
+  name: "{{ .Values.common.name }}-secret"
+  labels: {}
+  annotations: {}
+service:
+  name: "{{ .Values.common.name }}-service"
+  labels: {}
+  annotations: {}
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+ingress:
+  name: "{{ .Values.common.name }}-ingress"
+  labels: {}
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http-issuer
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+config:
+  adminPassword: "{{ randAlphaNum 32 }}"
+  adminUser: "{{ randAlphaNum 8 }}"
+  domain: "keycloak"
+  logLevel: info
+  tls:
+    enable: true
+  smtp:
+    enable: false
+  db:
+    type: dev-file
+    host: null
+    name: null
+    user: null
+    password: "{{ randAlphaNum 32 }}"
+  kerberos:
+    enable: false
+  ldap:
+    enable: false
+    enable_tls: false
+    host: localhost
+environmentVars:
+  KC_PROXY: "edge"
+  KC_HOSTNAME: "{{ .Values.config.domain | quote }}"
+  KC_DB: '{{ .Values.config.db.type | required ".config.db.type is required!" | quote }}'
+  KC_DB_URL_HOST: "{{ .Values.config.db.host | quote }}"
+  KC_DB_URL_DATABASE: "{{ .Values.config.db.name | quote }}"
+  KC_DB_USERNAME: "{{ .Values.config.db.user | quote }}"
+  KC_FEATURES: "preview"
+
+# Override settings of dependencies
+cert-Manager:
+  installCRDs: true

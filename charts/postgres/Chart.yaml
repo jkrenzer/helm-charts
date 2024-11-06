@@ -1,0 +1,22 @@
+apiVersion: v2
+name: postgres
+version: 0.0.1
+kubeVersion: ""
+description: Simple Postgres database server
+type: application
+keywords:
+  - postgres
+  - database
+  - init scripts
+home: https://www.postgresql.org/
+sources:
+  - https://github.com/postgres/postgres
+dependencies: []
+maintainers:
+  - name: jkrenzer
+    email: joern.krenzer@gmx.de
+    url: https://github.com/jkrenzer
+appVersion: "15.3"
+icon: https://www.svgrepo.com/show/379134/dns.svg
+deprecated: false
+annotations: {}

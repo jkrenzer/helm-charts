@@ -1,0 +1,120 @@
+backup:
+  enable: true
+  location: Filesystem
+  compression: gz
+  beginTime: 0415
+  retentionPeriod: 144000
+  md5: true
+  parallelCompression: true
+  path: /data/backup
+certManager:
+  enable: true
+cert:
+  name: "{{ .Values.common.name }}-cert"
+  dnsNames: []
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  annotations: {}
+certIssuer:
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: "{{ .Values.common.name }}-issuer"
+  labels: {}
+  annotations: {}
+certSecret:
+  name: "{{ .Values.common.name }}-cert-secret"
+  labels: {}
+  annotations: {}
+  template: |
+    labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
+    test: null
+common:
+  name: openldap
+  labels:
+    app: openldap
+  annotations: {}
+configMap:
+  name: "{{ .Values.common.name }}-config"
+  labels: {}
+  annotations: {}
+deployment:
+  name: "{{ .Values.common.name }}-deploy"
+  labels: {}
+  annotations: {}
+  replicas: 1
+persistentVolume:
+  create: true
+  name: "{{ .Values.common.name }}-pv"
+  labels: {}
+  annotations: {}
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  name: "{{ .Values.common.name }}-pvc"
+  labels: {}
+  annotations: {}
+storage:
+  type: local
+  local:
+    basePath: "/data"
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+storageClass:
+  create: false
+  name: "{{ .Values.storage.storageClassName }}"
+  labels: {}
+  annotations: {}
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+pod:
+  name: "{{ .Values.common.name }}-pod"
+  labels: {}
+  annotations: {}
+scripts:
+  name: "{{ .Values.common.name }}-scripts"
+  labels: {}
+secret:
+  name: "{{ .Values.common.name }}-secret"
+  labels: {}
+  annotations: {}
+service:
+  name: "{{ .Values.common.name }}-service"
+  labels: {}
+  annotations: {}
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+config:
+  adminPassword: "{{ randAlphaNum 32 }}"
+  configPassword: "{{ randAlphaNum 32 }}"
+  domain: "openldap"
+  baseDn: "dc=openldap"
+  organization: "openldap"
+  schemaType: "nis"
+  logLevel: "256"
+  logType: console
+  enableTls: true
+  enablePasswordPolicy: true
+environmentVars:
+  DOMAIN: "{{ .Values.config.domain | quote }}"
+  BASE_DN: "{{ .Values.config.baseDn  | quote }}"
+  ORGANIZATION: "{{ .Values.config.organization | quote }}"
+  SCHEMA_TYPE: "{{ .Values.config.schemaType | quote }}"
+  LOG_LEVEL: "{{ .Values.config.logLevel | quote }}"
+  LOG_TYPE: "{{ .Values.config.logType | upper | quote }}"
+  ENABLE_BACKUP: "{{ .Values.backup.enable | toString | upper | quote }}"
+  BACKUP_LOCATION: "{{ .Values.backup.location | upper | quote }}"
+  BACKUP_COMPRESSION: "{{ .Values.backup.compression | upper | quote }}"
+  BACKUP_BEGIN: "{{ .Values.backup.beginTime | quote }}"
+  BACKUP_RETENTION: "{{ .Values.backup.retentionPeriod | quote }}"
+  BACKUP_MD5: "{{ .Values.backup.md5 | toString | upper | quote }}"
+  BACKUP_PARALLEL_COMPRESSION: "{{ .Values.backup.parallelCompression | toString | upper | quote }}"
+  BACKUP_PATH: "{{ .Values.backup.path | quote }}"
+  ENABLE_TLS: "{{ .Values.config.enableTls | toString | lower | quote }}"
+  ENABLE_PPOLICY: "{{ .Values.config.enablePasswordPolicy | toString | upper | quote }}"
+  TLS_CRT_FILENAME: "tls.crt"
+  TLS_KEY_FILENAME: "tls.key"
+
+# Override settings of dependencies
+cert-Manager:
+  installCRDs: true

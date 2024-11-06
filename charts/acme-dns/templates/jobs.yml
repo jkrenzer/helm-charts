@@ -1,0 +1,96 @@
+{{ if eq .Values.database.type "postgres" -}}
+{{- $AcmeConfigName := default (tpl "{{ .Values.common.name }}-config"  $ ) .Values.configMap.name -}}
+{{- $AcmeSecretName := default (tpl "{{ .Values.common.name }}-secrets" $ ) .Values.secret.name    -}}
+{{- $scripts        := default (tpl "{{ .Values.common.name }}-scripts" $ ) .Values.scripts.name   -}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ default (tpl "{{ .Values.common.name }}-job-createdb" $ ) .Values.jobs.createDb.name}}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- range $name, $value := .Values.common.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.jobs.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+    {{- range $name, $value := .Values.jobs.createDb.labels}}
+      {{ $name }}: {{ $value}}
+    {{- end}}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: {{ default 600 .Values.jobs.ttlSecondsAfterFinished }} 
+  template:
+    metadata:
+      name: {{ default (tpl "{{ .Values.common.name }}-job-createdb-pod" $ ) .Values.jobs.createDb.pod.name}}
+      namespace: {{ .Release.Namespace }}
+      labels:
+        {{- range $name, $value := .Values.common.labels}}
+          {{ $name }}: {{ $value}}
+        {{- end}}
+        {{- range $name, $value := .Values.jobs.labels}}
+          {{ $name }}: {{ $value}}
+        {{- end}}
+        {{- range $name, $value := .Values.jobs.createDb.labels}}
+          {{ $name }}: {{ $value}}
+        {{- end}}
+    spec:
+      containers:
+      - name: {{ default (tpl "{{ .Values.common.name }}-job-createdb-container" $ ) .Values.jobs.createDb.container.name}}
+        image: postgres:12-alpine # A relatively small official image that can run psql
+        command:
+        - bash
+        - -c
+        - create-db.sh
+        env:
+        - name: POSTGRES_PORT
+          value: '5432'
+        - name: POSTGRES_HOST
+          value: postgres
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_USER
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_DB
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ $AcmeConfigName }}
+              key: DB_NAME
+        - name: USER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ $AcmeConfigName }}
+              key: DB_USER
+        - name: USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $AcmeSecretName }}
+              key: DB_PASSWORD
+        volumeMounts:
+        - name: scripts
+          mountPath: /usr/local/bin/create-db.sh
+          subPath: create-db.sh
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ $scripts }}
+          defaultMode: 0755
+      restartPolicy: Never
+  backoffLimit: 1
+...
+{{ end }}

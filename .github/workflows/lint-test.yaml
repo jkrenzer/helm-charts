@@ -1,0 +1,78 @@
+name: Lint and Test Charts
+
+on: pull_request
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    env:
+      WORKSPACE_DIR: "${{ github.workspace }}"
+      CHARTS_DIR: "${{ github.workspace }}/charts"
+      DATA_DIR: "${{ github.workspace }}/data"
+      DATA_HOST: "chart-testing-control-plane"
+      TARGET_BRANCH: "${{ github.event.repository.default_branch }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.2
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.0
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch $TARGET_BRANCH)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run chart-testing (lint)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct lint --target-branch $TARGET_BRANCH --github-groups
+
+      - name: Prepare kind config
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: cuchi/jinja2-action@v1.2.2
+        with:
+          template: ${{ env.WORKSPACE_DIR }}/.github/config/kind.yaml.j2
+          output_file: ${{ env.WORKSPACE_DIR }}/kind-config.yaml
+          variables: |
+            data_dir=${{ env.DATA_DIR }}
+
+      - name: Show kind config
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          echo "::group::File contents"
+          cat ${{ env.WORKSPACE_DIR }}/kind-config.yaml
+          echo "::endgroup::"
+          
+      - name: Create directories
+        if: steps.list-changed.outputs.changed == 'true'
+        run: cd ${{ env.WORKSPACE_DIR }}/bin && bash ./ensure-data-dirs
+
+      - name: Create kind cluster
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: helm/kind-action@v1.4.0
+        with:
+          config: ${{ env.WORKSPACE_DIR }}/kind-config.yaml
+          verbosity: 1
+
+      - name: Install test dependencies
+        if: steps.list-changed.outputs.changed == 'true'
+        run: cd ${{ env.WORKSPACE_DIR }}/bin && bash ./install-test-dependencies && kubectl get nodes
+
+      - name: Run chart-testing (install)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --target-branch $TARGET_BRANCH --github-groups --helm-extra-set-args "--set=storage.hosts={${{ env.DATA_HOST }}} --set=storage.local.basePath=/data"

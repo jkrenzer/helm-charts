@@ -1,6 +1,6 @@
 apiVersion: v2
 name: openldap
-version: 0.0.1
+version: 0.0.2
 kubeVersion: ""
 description: Simple OpenLDAP helm chart based on Tiredofit's docker image
 type: application

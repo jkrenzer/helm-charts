@@ -48,6 +48,8 @@ jobs:
         with:
           template: ${{ env.WORKSPACE_DIR }}/.github/config/kind.yaml.j2
           output_file: ${{ env.WORKSPACE_DIR }}/kind-config.yaml
+          variables: |
+            data_dir=${{ env.DATA_DIR }}
 
       - name: Show kind config
         if: steps.list-changed.outputs.changed == 'true'

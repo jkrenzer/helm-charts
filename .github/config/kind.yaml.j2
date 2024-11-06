@@ -4,5 +4,5 @@ nodes:
   - role: control-plane
     # add a mount for the data dir
     extraMounts:
-      - hostPath: {{ env['DATA_DIR'] }}
+      - hostPath: {{ data_dir }}
         containerPath: /data

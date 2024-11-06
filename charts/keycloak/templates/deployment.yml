@@ -1,20 +1,7 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ tpl .Values.deployment.name . }}
-  namespace: {{ .Release.Namespace }}
-  labels: {{ mustMerge .Values.deployment.labels .Values.common.labels | toYaml | nindent 4 }}
-  annotations: {{ mustMerge .Values.deployment.annotations .Values.common.annotations | toYaml | nindent 4 }}
+{{- include "common-library.deployment" (dict "globals" . "override" "keycloak.deployment") -}}
+{{- define "keycloak.deployment" -}}
 spec:
-  replicas: {{ .Values.deployment.replicas }}
-  selector:
-    matchLabels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 6 }}
   template:
-    metadata:
-      name: {{ tpl .Values.pod.name . }}
-      namespace: {{ .Release.Namespace }}
-      labels: {{ mustMerge .Values.pod.labels .Values.common.labels | toYaml | nindent 8 }}
-      annotations: {{ mustMerge .Values.pod.annotations .Values.common.annotations | toYaml | nindent 8 }}
     spec:
       containers:
         - args: 
@@ -79,3 +66,4 @@ spec:
         {{- end }}
         - name: tmp-files
           emptyDir: {}
+{{- end -}}

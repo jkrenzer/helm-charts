@@ -1,6 +1,6 @@
 apiVersion: v2
 name: postgres
-version: 0.0.2
+version: 0.0.3
 kubeVersion: ""
 description: Simple Postgres database server
 type: application

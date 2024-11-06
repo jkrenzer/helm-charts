@@ -16,7 +16,7 @@
         {
             "label": "Lint, install and test charts",
             "type": "shell",
-            "command": "ct lint-and-install --lint-conf .ct/lintconfig.yaml --helm-extra-set-args \"--set=storage.hosts={docker-desktop} --set=storage.local.basePath=/run/desktop/mnt/host/wsl/data\""
+            "command": "ct lint-and-install --lint-conf .ct/lintconfig.yaml --excluded-charts common-library --helm-extra-set-args \"--set=storage.hosts={docker-desktop} --set=storage.local.basePath=/run/desktop/mnt/host/wsl/data\""
         }
     ]
 }

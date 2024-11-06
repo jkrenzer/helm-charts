@@ -1,0 +1,11 @@
+apiVersion: v2
+name: common-library
+description: Commenly used templates and functions
+type: library
+version: 0.0.1
+appVersion: "0.0.1"
+home: https://github.com/jkrenzer/helm-charts
+maintainers:
+  - name: jkrenzer
+    email: joern.krenzer@gmx.de
+    url: https://github.com/jkrenzer

@@ -1,6 +1,6 @@
 apiVersion: v2
 name: keycloak
-version: 0.0.1
+version: 0.0.2
 kubeVersion: ""
 description: Docker-Mailserver helm chart
 type: application
@@ -16,7 +16,7 @@ maintainers:
   - name: jkrenzer
     email: joern.krenzer@gmx.de
     url: https://github.com/jkrenzer
-appVersion: "23.0.4"
+appVersion: "26.0.5"
 icon: https://www.keycloak.org/resources/images/logo.svg
 deprecated: false
 annotations: {}

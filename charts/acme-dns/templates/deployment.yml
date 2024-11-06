@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: acme-dns
-          image: joohoi/acme-dns:{{ default "v1.0" .Values.nameserver.version }}
+          image: joohoi/acme-dns:{{ .Chart.AppVersion }}
           imagePullPolicy: "IfNotPresent"
           ports:
             - name: dns-port-tcp

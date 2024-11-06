@@ -29,7 +29,7 @@ spec:
                 name: keycloak-config
             - secretRef:
                 name: keycloak-secret
-          image: quay.io/keycloak/keycloak:26.0.5
+          image: quay.io/keycloak/keycloak:{{ .Chart.AppVersion }}
           name: keycloak
           ports:
             - containerPort: 8080

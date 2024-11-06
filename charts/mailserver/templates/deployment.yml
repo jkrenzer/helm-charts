@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: mailserver
-          image: mailserver/docker-mailserver:13.3.0
+          image: mailserver/docker-mailserver:{{ .Chart.AppVersion }}
           imagePullPolicy: "IfNotPresent"
           securityContext:
             allowPrivilegeEscalation: false

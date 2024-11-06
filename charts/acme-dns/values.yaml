@@ -25,7 +25,6 @@ nameserver:
   public:
     ipV4:
     ipV6:
-  version: v1.0
 pod:
   labels:
 scripts:

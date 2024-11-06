@@ -1,0 +1,3 @@
+#!/bin/bash -e
+git rm -rf --cached .
+git reset --hard HEAD

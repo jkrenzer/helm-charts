@@ -1,11 +1,5 @@
 {{ if .Values.storageClass.create -}}
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: {{ tpl .Values.storageClass.name . }}
-  namespace: {{ .Release.Namespace }}
-  labels: {{ mustMerge .Values.storageClass.labels .Values.common.labels | toYaml | nindent 4}}
-  annotations: {{ mustMerge .Values.storageClass.annotations .Values.common.annotations | toYaml | nindent 4 }}
-provisioner: {{ .Values.storageClass.provisioner }}
-volumeBindingMode: {{ .Values.storageClass.volumeBindingMode }}
+{{- include "common-library.storageClass" (dict "globals" . "override" "keycloak.storageClass") -}}
+{{- end -}}
+{{- define "keycloak.storageClass" -}}
 {{- end }}

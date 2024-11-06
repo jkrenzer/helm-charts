@@ -58,9 +58,9 @@ jobs:
           cat ${{ env.WORKSPACE_DIR }}/kind-config.yaml
           echo "::endgroup::"
           
-      - name: Prepare tests
+      - name: Create directories
         if: steps.list-changed.outputs.changed == 'true'
-        run: cd ${{ env.WORKSPACE_DIR }}/bin && bash ./prepare-tests && kubectl get nodes
+        run: cd ${{ env.WORKSPACE_DIR }}/bin && bash ./ensure-data-dirs
 
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
@@ -68,6 +68,10 @@ jobs:
         with:
           config: ${{ env.WORKSPACE_DIR }}/kind-config.yaml
           verbosity: 1
+
+      - name: Install test dependencies
+        if: steps.list-changed.outputs.changed == 'true'
+        run: cd ${{ env.WORKSPACE_DIR }}/bin && bash ./install-test-dependencies && kubectl get nodes
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

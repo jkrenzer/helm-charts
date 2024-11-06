@@ -15,5 +15,5 @@ spec:
                   number: 8443
                   {{- end }}
             path: /
-            pathType: Prefix#
+            pathType: Prefix
 {{- end -}}

@@ -1,0 +1,118 @@
+apiVersion: v1
+entries:
+  acme-dns:
+  - apiVersion: v2
+    appVersion: v1.0
+    created: "2024-11-06T11:57:36.077504299Z"
+    description: Simple ACME-DNS server helm chart
+    digest: 85fcac0aaaf24b7885dc58fc32368dd1214a021ef55ed105e62fae75eb9839d2
+    home: The URL of this projects home page (optional)
+    icon: https://www.svgrepo.com/show/379134/dns.svg
+    keywords:
+    - acme
+    - letsencrypt
+    - dns
+    maintainers:
+    - email: joern.krenzer@gmx.de
+      name: jkrenzer
+      url: https://github.com/jkrenzer
+    name: acme-dns
+    sources:
+    - https://github.com/joohoi/acme-dns
+    type: application
+    urls:
+    - https://github.com/jkrenzer/helm-charts/releases/download/acme-dns-0.0.2/acme-dns-0.0.2.tgz
+    version: 0.0.2
+  docker-mailserver:
+  - apiVersion: v2
+    appVersion: 13.3.0
+    created: "2024-11-06T11:57:36.259908306Z"
+    description: Docker-Mailserver helm chart
+    digest: 8528f18b0beb7eb1a48b086cebf1294219f675275dc4ddae43f76724cdeeecfb
+    home: https://docker-mailserver.github.io/docker-mailserver/v13.3/
+    icon: https://avatars.githubusercontent.com/u/76868633?s=48&v=4
+    keywords:
+    - postfix
+    - dovecot
+    - mail
+    maintainers:
+    - email: joern.krenzer@gmx.de
+      name: jkrenzer
+      url: https://github.com/jkrenzer
+    name: docker-mailserver
+    sources:
+    - https://github.com/docker-mailserver/docker-mailserver
+    type: application
+    urls:
+    - https://github.com/jkrenzer/helm-charts/releases/download/docker-mailserver-0.0.2/docker-mailserver-0.0.2.tgz
+    version: 0.0.2
+  keycloak:
+  - apiVersion: v2
+    appVersion: 26.0.5
+    created: "2024-11-06T11:57:36.462643234Z"
+    description: Docker-Mailserver helm chart
+    digest: c42bd1b172ffec9bbe1f9fb486ff9766aa95b0286c2e1273e3441ddda922d424
+    home: https://www.keycloak.org/
+    icon: https://www.keycloak.org/resources/images/logo.svg
+    keywords:
+    - postfix
+    - dovecot
+    - mail
+    maintainers:
+    - email: joern.krenzer@gmx.de
+      name: jkrenzer
+      url: https://github.com/jkrenzer
+    name: keycloak
+    sources:
+    - https://github.com/keycloak/keycloak
+    type: application
+    urls:
+    - https://github.com/jkrenzer/helm-charts/releases/download/keycloak-0.0.2/keycloak-0.0.2.tgz
+    version: 0.0.2
+  openldap:
+  - apiVersion: v2
+    appVersion: "2.6"
+    created: "2024-11-06T11:57:36.647132032Z"
+    description: Simple OpenLDAP helm chart based on Tiredofit's docker image
+    digest: e64887bbfb21c6289621027055668a7bcdf5fdc0f91d95df1eba4af079aabeb5
+    home: The URL of this projects home page (optional)
+    icon: https://www.svgrepo.com/show/511864/directory-search-1623.svg
+    keywords:
+    - openldap
+    - slapd
+    - backup
+    maintainers:
+    - email: joern.krenzer@gmx.de
+      name: jkrenzer
+      url: https://github.com/jkrenzer
+    name: openldap
+    sources:
+    - https://github.com/tiredofit/docker-openldap
+    type: application
+    urls:
+    - https://github.com/jkrenzer/helm-charts/releases/download/openldap-0.0.2/openldap-0.0.2.tgz
+    version: 0.0.2
+  postgres:
+  - apiVersion: v2
+    appVersion: "15.3"
+    created: "2024-11-06T11:57:36.830285585Z"
+    description: Simple Postgres database server
+    digest: 40590f1101f945ed1c8abf5a81b0ab7a6cbe1091f385c53cd5eae730445afdee
+    home: https://www.postgresql.org/
+    icon: https://www.svgrepo.com/show/379134/dns.svg
+    keywords:
+    - postgres
+    - database
+    - init scripts
+    maintainers:
+    - email: joern.krenzer@gmx.de
+      name: jkrenzer
+      url: https://github.com/jkrenzer
+    name: postgres
+    sources:
+    - https://github.com/postgres/postgres
+    type: application
+    urls:
+    - https://github.com/jkrenzer/helm-charts/releases/download/postgres-0.0.2/postgres-0.0.2.tgz
+    version: 0.0.2
+generated: "2024-11-06T11:57:36.830290323Z"

@@ -3,9 +3,9 @@ name: Lint and Test Charts
 on: pull_request
 
 env:
-  WORKSPACE_DIR: ${{ github.workspace }}
-  CHARTS_DIR: ${{ github.workspace }}/charts
-  DATA_DIR: ${{ github.workspace }}/data
+  WORKSPACE_DIR: ${{ GITHUB_WORKSPACE }}
+  CHARTS_DIR: ${{ GITHUB_WORKSPACE }}/charts
+  DATA_DIR: ${{ GITHUB_WORKSPACE }}/data
   DATA_HOST: chart-testing-control-plane
 
 jobs:
@@ -48,8 +48,6 @@ jobs:
         with:
           template: ${{ github.workspace }}/.github/config/kind.yaml.j2
           output_file: ${{ github.workspace }}/kind-config.yaml
-        env:
-          DATA_DIR: "${{ env.DATA_DIR }}"
 
       - name: Show kind config
         if: steps.list-changed.outputs.changed == 'true'

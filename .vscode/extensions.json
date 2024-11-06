@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "ms-kubernetes-tools.vscode-kubernetes-tools",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github"
     ]
 }

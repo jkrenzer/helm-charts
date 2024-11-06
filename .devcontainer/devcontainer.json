@@ -52,7 +52,8 @@
 		"vscode": {
 			"extensions": [
 				"ms-kubernetes-tools.vscode-kubernetes-tools",
-				"GitHub.vscode-github-actions"
+				"GitHub.vscode-github-actions",
+				"GitHub.vscode-pull-request-github"
 			]
 		}
 	},

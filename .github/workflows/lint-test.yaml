@@ -2,15 +2,14 @@ name: Lint and Test Charts
 
 on: pull_request
 
-env:
-  WORKSPACE_DIR: ${{ GITHUB_WORKSPACE }}
-  CHARTS_DIR: ${{ GITHUB_WORKSPACE }}/charts
-  DATA_DIR: ${{ GITHUB_WORKSPACE }}/data
-  DATA_HOST: chart-testing-control-plane
-
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    env:
+      WORKSPACE_DIR: ${{ env.GITHUB_WORKSPACE }}
+      CHARTS_DIR: ${{ env.GITHUB_WORKSPACE }}/charts
+      DATA_DIR: ${{ env.GITHUB_WORKSPACE }}/data
+      DATA_HOST: chart-testing-control-plane
     steps:
       - name: Checkout
         uses: actions/checkout@v3

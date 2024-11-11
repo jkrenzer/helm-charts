@@ -6,6 +6,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata: {{ $metadata | nindent 2 }}
 spec:
+  ingressClassName: {{ .Values.ingress.class }}
   rules:
     - host: {{ .Values.config.domain }}
       http:

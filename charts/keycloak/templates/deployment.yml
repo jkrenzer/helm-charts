@@ -16,22 +16,28 @@ spec:
                 name: keycloak-config
             - secretRef:
                 name: keycloak-secret
-          image: quay.io/keycloak/keycloak:{{ .Chart.AppVersion }}
-          name: keycloak
+          name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ .Values.image.repository }}:{{ tpl .Values.image.tag . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
               name: http
+            - containerPort: 9000
+              name: management-http
             {{ if .Values.config.tls.enable -}}
             - containerPort: 8443
               name: https
             {{- end }}
+          startupProbe:
+            {{- tpl (toYaml .Values.startupProbe) . | nindent 12 }}
+          livenessProbe:
+            {{- tpl (toYaml .Values.livenessProbe) . | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /realms/master
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            failureThreshold: 12
+            {{- tpl (toYaml .Values.readinessProbe) . | nindent 12 }}
+          resources:
+            {{- tpl (toYaml .Values.resources) . | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/keycloak/data/import
               name: pv
@@ -53,8 +59,6 @@ spec:
               name: pv
               subPath: certs
               {{ end }}
-      securityContext:
-        runAsUser: 1000
       volumes:
         - name: pv
           persistentVolumeClaim:
@@ -66,4 +70,16 @@ spec:
         {{- end }}
         - name: tmp-files
           emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end -}}

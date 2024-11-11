@@ -31,15 +31,20 @@ configMap:
 deployment:
   name: "{{ .Values.common.name }}-deploy"
   labels: {}
+  autoscaling:
+    enable: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   annotations: {}
   replicas: 1
-  resources:
-    limits:
-      memory: 4Gi
-      cpu: 1500m
-    requests:
-      memory: 2Gi
-      cpu: 600m
+resources:
+  limits:
+    memory: 4Gi
+    cpu: 1500m
+  requests:
+    memory: 2Gi
+    cpu: 600m
 kerberosConfigMap:
   name: "{{ .Values.common.name }}-kerberos-config"
   labels: {}
@@ -84,6 +89,15 @@ secret:
   labels: {}
   annotations: {}
 service:
+  ports:
+    - name: http
+      containerPort: 8080
+      protocol: TCP
+    - name: https
+      containerPort: 8443
+      protocol: TCP
+      when: "{{ .Values.config.tls.enable }}"
+  portName: http
   name: "{{ .Values.common.name }}-service"
   labels: {}
   annotations: {}
@@ -96,6 +110,7 @@ ingress:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  class: nginx
 config:
   adminPassword: "{{ randAlphaNum 32 }}"
   adminUser: "{{ randAlphaNum 8 }}"
@@ -119,13 +134,53 @@ config:
     host: localhost
 environmentVars:
   KC_PROXY: "edge"
+  KC_HTTP_HOST: "0.0.0.0"
   KC_HOSTNAME: "{{ .Values.config.domain | quote }}"
   KC_DB: '{{ .Values.config.db.type | required ".config.db.type is required!" | quote }}'
   KC_DB_URL_HOST: "{{ .Values.config.db.host | quote }}"
   KC_DB_URL_DATABASE: "{{ .Values.config.db.name | quote }}"
   KC_DB_USERNAME: "{{ .Values.config.db.user | quote }}"
   KC_FEATURES: "preview"
-
+  KC_HTTP_MANAGEMENT_PORT: '"9000"'
+  KC_HTTP_MANAGEMENT_RELATIVE_PATH: "/"
+  KC_HEALTH_ENABLED: '"true"'
+volumes: []
+volumeMounts: []
+startupProbe:
+  httpGet:
+    path: /health/started
+    port: management-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 20
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: management-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 20
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: management-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 20
 # Override settings of dependencies
 cert-Manager:
   installCRDs: true
+image:
+  repository: quay.io/keycloak/keycloak
+  pullPolicy: IfNotPresent
+  tag: "{{ .Chart.AppVersion }}"
+serviceAccount:
+  create: true
+  name: "{{ .Values.common.name }}-sa"
+  labels: {}
+  annotations: {}
+securityContext:
+  runAsUser: 1000

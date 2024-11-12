@@ -33,7 +33,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports: 
             {{- range .Values.service.ports }}
-            {{- if( tpl (default "true" .when) . | fromYaml ) }}
+            {{- if ( tpl (default "true" .when) $ | fromYaml ) }}
             - {{ toYaml ( omit . "when") | nindent 14 | trim }}
             {{- end }}
             {{- end }}

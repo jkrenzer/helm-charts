@@ -57,7 +57,7 @@ config:
   #
   # CA certificate for validating clients. This can be used to secure
   # TCP traffic between Radicale and a reverse proxy
-  #certificate_authority =
+  # certificate_authority =
   #
   #
   encoding:
@@ -79,10 +79,10 @@ config:
     ldap_uri: ldap://localhost
     #
     # The base DN where the user accounts have to be searched
-    ldap_base: ##BASE_DN##
+    ldap_base: DC=example,DC=com
     #
     # The reader DN of the LDAP server
-    ldap_reader_dn: CN=ldapreader,CN=Users,##BASE_DN##
+    ldap_reader_dn: CN=ldapreader,CN=Users,DC=example,DC=com
     #
     # Password of the reader DN
     ldap_secret: ldapreader-secret
@@ -103,7 +103,7 @@ config:
     ldap_ssl_verify_mode: REQUIRED
     #
     # The path to the CA file in pem format which is used to certificate the server certificate
-    #ldap_ssl_ca_file =
+    ldap_ssl_ca_file: null
     #
     # Htpasswd filename
     htpasswd_filename: /etc/radicale/users
@@ -156,28 +156,28 @@ config:
     #
     # Skip broken item instead of triggering an exception
     skip_broken_item: true
-  #
-  # Command that is run after changes to storage
-  # Example: ([ -d .git ] || git init) && git add -A && (git diff --cached --quiet || git commit -m "Changes by \"%(user)s\"")
-  #hook =
-  #
-  # Create predefined user collections
-  #
-  # json format:
-  #
-  #  {
-  #    "def-addressbook": {
-  #       "D:displayname": "Personal Address Book",
-  #       "tag": "VADDRESSBOOK"
-  #    },
-  #    "def-calendar": {
-  #       "C:supported-calendar-component-set": "VEVENT,VJOURNAL,VTODO",
-  #       "D:displayname": "Personal Calendar",
-  #       "tag": "VCALENDAR"
-  #    }
-  #  }
-  #
-  #predefined_collections =
+    #
+    # Command that is run after changes to storage
+    # Example: ([ -d .git ] || git init) && git add -A && (git diff --cached --quiet || git commit -m "Changes by \"%(user)s\"")
+    hook: null
+    #
+    # Create predefined user collections
+    #
+    # json format:
+    #
+    #  {
+    #    "def-addressbook": {
+    #       "D:displayname": "Personal Address Book",
+    #       "tag": "VADDRESSBOOK"
+    #    },
+    #    "def-calendar": {
+    #       "C:supported-calendar-component-set": "VEVENT,VJOURNAL,VTODO",
+    #       "D:displayname": "Personal Calendar",
+    #       "tag": "VCALENDAR"
+    #    }
+    #  }
+    #
+    predefined_collections: []
   #
   #
   web:
@@ -217,17 +217,13 @@ config:
   #
   headers: {}
   #
-  # Additional HTTP headers
-  #Access-Control-Allow-Origin = *
-  #
-  #
   hook:
     #
     # Hook types
     # Value: none | rabbitmq
     type: none
-    #rabbitmq_endpoint =
-    #rabbitmq_topic =
+    rabbitmq_endpoint: null
+    rabbitmq_topic: null
     rabbitmq_queue_type: classic
   #
   #
@@ -266,17 +262,13 @@ ingress:
   enable: true
   labels: {}
   name: "{{ .Values.common.name }}-ingress"
-kerberosConfigMap:
-  annotations: {}
-  labels: {}
-  name: "{{ .Values.common.name }}-kerberos-config"
 livenessProbe:
   failureThreshold: 20
   httpGet:
-    path: /health/live
-    port: management-http
+    path: /
+    port: http
     scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
-  initialDelaySeconds: 30
+  initialDelaySeconds: 5
   periodSeconds: 5
 persistentVolume:
   annotations: {}
@@ -296,18 +288,18 @@ pod:
 readinessProbe:
   failureThreshold: 20
   httpGet:
-    path: /health/ready
-    port: management-http
+    path: /
+    port: http
     scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
-  initialDelaySeconds: 30
+  initialDelaySeconds: 5
   periodSeconds: 5
 resources:
   limits:
-    cpu: 1500m
-    memory: 4Gi
-  requests:
-    cpu: 600m
+    cpu: 1000m
     memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
 scripts:
   annotations: {}
   labels: {}
@@ -341,10 +333,10 @@ serviceAccount:
 startupProbe:
   failureThreshold: 20
   httpGet:
-    path: /health/started
-    port: management-http
+    path: /
+    port: http
     scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
-  initialDelaySeconds: 30
+  initialDelaySeconds: 5
   periodSeconds: 5
 storage:
   accessModes:

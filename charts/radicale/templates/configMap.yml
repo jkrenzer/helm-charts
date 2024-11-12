@@ -210,7 +210,4 @@ data:
       # When returning a free-busy report, limit the number of returned
       # occurences per event to prevent DOS attacks.
       max_freebusy_occurrence = {{ .Values.config.reporting.max_freebusy_occurrence | default "10000" }}
-kind: ConfigMap
-metadata: {{ $metadata | nindent 2 }}
-type: Opaque
 {{- end -}}

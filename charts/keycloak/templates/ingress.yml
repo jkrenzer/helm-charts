@@ -1,4 +1,6 @@
+{{- if .Values.ingress.enable -}}
 {{- include "common-library.ingress" (dict "globals" . "override" "keycloak.ingress") -}}
+{{- end -}}
 {{- define "keycloak.ingress" -}}
 spec:
   rules:

@@ -1,185 +1,183 @@
 ---
+cert:
+  annotations: {}
+  dnsNames: []
+  issuer: '{{ tpl .Values.certIssuer.name . }}'
+  labels: {}
+  name: '{{ .Values.common.name }}-cert'
+certIssuer:
+  annotations: {}
+  labels: {}
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: '{{ .Values.common.name }}-issuer'
 certManager:
   enable: true
-cert:
-  name: "{{ .Values.common.name }}-cert"
-  dnsNames: []
-  issuer: "{{ tpl .Values.certIssuer.name . }}"
-  labels: {}
-  annotations: {}
-certIssuer:
-  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
-  name: "{{ .Values.common.name }}-issuer"
-  labels: {}
-  annotations: {}
 certSecret:
-  name: "{{ .Values.common.name }}-cert-secret"
-  labels: {}
   annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-cert-secret'
   template: |
     labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
     test: null
 common:
-  name: keycloak
+  annotations: {}
   labels:
     app: keycloak
-  annotations: {}
-configMap:
-  name: "{{ .Values.common.name }}-config"
-  labels: {}
-  annotations: {}
-deployment:
-  name: "{{ .Values.common.name }}-deploy"
-  labels: {}
-  autoscaling:
-    enable: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-  annotations: {}
-  replicas: 1
-resources:
-  limits:
-    memory: 4Gi
-    cpu: 1500m
-  requests:
-    memory: 2Gi
-    cpu: 600m
-kerberosConfigMap:
-  name: "{{ .Values.common.name }}-kerberos-config"
-  labels: {}
-  annotations: {}
-persistentVolume:
-  create: true
-  name: "{{ .Values.common.name }}-pv"
-  labels: {}
-  annotations: {}
-  reclaimPolicy: Delete
-  volumeMode: Filesystem
-persistentVolumeClaim:
-  name: "{{ .Values.common.name }}-pvc"
-  labels: {}
-  annotations: {}
-storage:
-  type: local
-  local:
-    basePath: "/data"
-    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
-  space: 10Gi
-  storageClassName: local-storage
-  accessModes:
-    - ReadWriteMany
-storageClass:
-  create: false
-  name: "{{ .Values.storage.storageClassName }}"
-  labels: {}
-  annotations: {}
-  provisioner: kubernetes.io/no-provisioner
-  volumeBindingMode: WaitForFirstConsumer
-pod:
-  name: "{{ .Values.common.name }}-pod"
-  labels: {}
-  annotations: {}
-scripts:
-  name: "{{ .Values.common.name }}-scripts"
-  labels: {}
-  annotations: {}
-secret:
-  name: "{{ .Values.common.name }}-secret"
-  labels: {}
-  annotations: {}
-service:
-  ports:
-    - name: http
-      containerPort: 8080
-      protocol: TCP
-    - name: https
-      containerPort: 8443
-      protocol: TCP
-      when: '{{ .Values.config.tls.enable | default "false" }}'
-  portName: http
-  name: "{{ .Values.common.name }}-service"
-  labels: {}
-  annotations: {}
-  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
-ingress:
-  name: "{{ .Values.common.name }}-ingress"
-  labels: {}
-  annotations:
-    cert-manager.io/issuer: letsencrypt-http-issuer
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  class: nginx
+  name: keycloak
 config:
-  adminPassword: "{{ randAlphaNum 32 }}"
-  adminUser: "{{ randAlphaNum 8 }}"
-  domain: "keycloak"
-  logLevel: info
-  tls:
-    enable: true
-  smtp:
-    enable: false
+  adminPassword: '{{ randAlphaNum 32 }}'
+  adminUser: '{{ randAlphaNum 8 }}'
   db:
-    type: dev-file
     host: null
     name: null
+    password: '{{ randAlphaNum 32 }}'
+    type: dev-file
     user: null
-    password: "{{ randAlphaNum 32 }}"
+  domain: keycloak
   kerberos:
     enable: false
   ldap:
     enable: false
     enable_tls: false
     host: localhost
+  logLevel: info
+  smtp:
+    enable: false
+  tls:
+    enable: true
+configMap:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-config'
+deployment:
+  annotations: {}
+  autoscaling:
+    enable: false
+    maxReplicas: 100
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 80
+  labels: {}
+  name: '{{ .Values.common.name }}-deploy'
+  replicas: 1
 environmentVars:
-  KC_PROXY: "edge"
-  KC_HTTP_HOST: "0.0.0.0"
-  KC_HOSTNAME: "{{ .Values.config.domain | quote }}"
   KC_DB: '{{ .Values.config.db.type | required ".config.db.type is required!" | quote }}'
-  KC_DB_URL_HOST: "{{ .Values.config.db.host | quote }}"
-  KC_DB_URL_DATABASE: "{{ .Values.config.db.name | quote }}"
-  KC_DB_USERNAME: "{{ .Values.config.db.user | quote }}"
-  KC_FEATURES: "preview"
-  KC_HTTP_MANAGEMENT_PORT: '"9000"'
-  KC_HTTP_MANAGEMENT_RELATIVE_PATH: "/"
+  KC_DB_URL_DATABASE: '{{ .Values.config.db.name | quote }}'
+  KC_DB_URL_HOST: '{{ .Values.config.db.host | quote }}'
+  KC_DB_USERNAME: '{{ .Values.config.db.user | quote }}'
+  KC_FEATURES: preview
   KC_HEALTH_ENABLED: '"true"'
-volumes: []
-volumeMounts: []
-startupProbe:
-  httpGet:
-    path: /health/started
-    port: management-http
-    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
-  initialDelaySeconds: 30
-  periodSeconds: 5
-  failureThreshold: 20
+  KC_HOSTNAME: '{{ .Values.config.domain | quote }}'
+  KC_HTTP_HOST: 0.0.0.0
+  KC_HTTP_MANAGEMENT_PORT: '"9000"'
+  KC_HTTP_MANAGEMENT_RELATIVE_PATH: /
+  KC_PROXY: edge
+image:
+  pullPolicy: IfNotPresent
+  repository: quay.io/keycloak/keycloak
+  tag: '{{ .Chart.AppVersion }}'
+ingress:
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  class: nginx
+  enable: true
+  labels: {}
+  name: '{{ .Values.common.name }}-ingress'
+kerberosConfigMap:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-kerberos-config'
 livenessProbe:
+  failureThreshold: 20
   httpGet:
     path: /health/live
     port: management-http
-    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+    scheme: '{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}'
   initialDelaySeconds: 30
   periodSeconds: 5
-  failureThreshold: 20
+persistentVolume:
+  annotations: {}
+  create: true
+  labels: {}
+  name: '{{ .Values.common.name }}-pv'
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-pvc'
+pod:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-pod'
 readinessProbe:
+  failureThreshold: 20
   httpGet:
     path: /health/ready
     port: management-http
-    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+    scheme: '{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}'
   initialDelaySeconds: 30
   periodSeconds: 5
-  failureThreshold: 20
-# Override settings of dependencies
-cert-Manager:
-  installCRDs: true
-image:
-  repository: quay.io/keycloak/keycloak
-  pullPolicy: IfNotPresent
-  tag: "{{ .Chart.AppVersion }}"
-serviceAccount:
-  create: true
-  name: "{{ .Values.common.name }}-sa"
-  labels: {}
+resources:
+  limits:
+    cpu: 1500m
+    memory: 4Gi
+  requests:
+    cpu: 600m
+    memory: 2Gi
+scripts:
   annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-scripts'
+secret:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-secret'
 securityContext:
   runAsUser: 1000
+service:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-service'
+  portName: http
+  ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+    - containerPort: 8443
+      name: https
+      protocol: TCP
+      when: '{{ .Values.config.tls.enable | default "false" }}'
+  selectors: '{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}'
+serviceAccount:
+  annotations: {}
+  create: true
+  labels: {}
+  name: '{{ .Values.common.name }}-sa'
+startupProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /health/started
+    port: management-http
+    scheme: '{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}'
+  initialDelaySeconds: 30
+  periodSeconds: 5
+storage:
+  accessModes:
+    - ReadWriteMany
+  local:
+    basePath: /data
+    path: '{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}'
+  space: 10Gi
+  storageClassName: local-storage
+  type: local
+storageClass:
+  annotations: {}
+  create: false
+  labels: {}
+  name: '{{ .Values.storage.storageClassName }}'
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+volumeMounts: []
+volumes: []

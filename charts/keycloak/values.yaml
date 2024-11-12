@@ -96,7 +96,7 @@ service:
     - name: https
       containerPort: 8443
       protocol: TCP
-      when: "{{ .Values.config.tls.enable }}"
+      when: '{{ .Values.config.tls.enable | default "false" }}'
   portName: http
   name: "{{ .Values.common.name }}-service"
   labels: {}

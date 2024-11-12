@@ -251,7 +251,7 @@ deployment:
 environmentVars: {}
 image:
   pullPolicy: IfNotPresent
-  repository: quay.io/radicale/radicale
+  repository: tomsquest/docker-radicale
   tag: "{{ .Chart.AppVersion }}"
 ingress:
   annotations:

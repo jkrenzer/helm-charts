@@ -1,0 +1,16 @@
+{{- include "common-library.service" (dict "globals" . "override" "radicale.service") -}}
+{{- define "radicale.service" -}}
+spec:
+  ports:
+    {{ if .Values.config.server.ssl -}}
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP
+    {{- else }}
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    {{- end }}
+{{- end -}}

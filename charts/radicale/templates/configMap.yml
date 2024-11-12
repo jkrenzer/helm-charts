@@ -9,7 +9,7 @@ data:
       # IPv6 syntax: [address]:port
       # Hostname syntax (using "getaddrinfo" to resolve to IPv4/IPv6 adress(es)): hostname:port
       # For example: 0.0.0.0:9999, [::]:9999, localhost:9999
-      hosts = {{ .Values.config.server.hosts | default "0.0.0.0:5232, [::]:5232" }}
+      hosts = {{ . | tpl (join ", " .Values.config.server.hosts) | default "0.0.0.0:5232, [::]:5232" }}
 
       # Max parallel connections
       max_connections = {{ .Values.config.server.max_connections | default "8" }}

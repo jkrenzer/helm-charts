@@ -1,0 +1,21 @@
+{{- if .Values.ingress.enable -}}
+{{- include "common-library.ingress" (dict "globals" . "override" "radicale.ingress") -}}
+{{- end -}}
+{{- define "radicale.ingress" -}}
+spec:
+  rules:
+    - host: {{ .Values.config.domain }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: radicale
+                port:
+                  {{ if .Values.config.server.ssl -}}
+                  name: https
+                  {{ else -}}
+                  name: http
+                  {{- end }}
+            path: /
+            pathType: Prefix
+{{- end -}}

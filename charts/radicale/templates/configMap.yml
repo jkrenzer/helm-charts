@@ -1,0 +1,216 @@
+{{- include "common-library.configMap" (dict "globals" . "override" "radicale.configMap") -}}
+{{- define "radicale.configMap" -}}
+data:
+  config: |-
+      [server]
+
+      # CalDAV server hostnames separated by a comma
+      # IPv4 syntax: address:port
+      # IPv6 syntax: [address]:port
+      # Hostname syntax (using "getaddrinfo" to resolve to IPv4/IPv6 adress(es)): hostname:port
+      # For example: 0.0.0.0:9999, [::]:9999, localhost:9999
+      hosts = {{ .Values.config.server.hosts | default "0.0.0.0:5232, [::]:5232" }}
+
+      # Max parallel connections
+      max_connections = {{ .Values.config.server.max_connections | default "8" }}
+
+      # Max size of request body (bytes)
+      max_content_length = {{ .Values.config.server.max_content_length | default "100000000" }}
+
+      # Socket timeout (seconds)
+      timeout = {{ .Values.config.server.timeout | default "30" }}
+
+      # SSL flag, enable HTTPS protocol
+      ssl = {{ .Values.config.server.ssl | default "False" }}
+
+      # SSL certificate path
+      certificate = {{ .Values.config.server.certificate | default "/etc/ssl/radicale.cert.pem" }}
+
+      # SSL private key
+      key = {{ .Values.config.server.key | default "/etc/ssl/radicale.key.pem" }}
+
+      # CA certificate for validating clients. This can be used to secure
+      # TCP traffic between Radicale and a reverse proxy
+      #certificate_authority =
+
+
+      [encoding]
+
+      # Encoding for responding requests
+      request = {{ .Values.config.encoding.request | default "utf-8" }}
+
+      # Encoding for storing local collections
+      stock = {{ .Values.config.encoding.stock | default "utf-8" }}
+
+
+      [auth]
+
+      # Authentication method
+      # Value: none | htpasswd | remote_user | http_x_remote_user | ldap | denyall
+      type = {{ .Values.config.auth.type | default "none" }}
+
+      # URI to the LDAP server
+      ldap_uri = {{ .Values.config.auth.ldap_uri | default "ldap://localhost" }}
+
+      # The base DN where the user accounts have to be searched
+      ldap_base = {{ .Values.config.auth.ldap_base | default "##BASE_DN##" }}
+
+      # The reader DN of the LDAP server
+      ldap_reader_dn = {{ .Values.config.auth.ldap_reader_dn | default "CN=ldapreader,CN=Users,##BASE_DN##" }}
+
+      # Password of the reader DN
+      ldap_secret = {{ .Values.config.auth.ldap_secret | default "ldapreader-secret" }}
+
+      # Path of the file containing password of the reader DN
+      ldap_secret_file = {{ .Values.config.auth.ldap_secret_file | default "/run/secrets/ldap_password" }}
+
+      # If the ldap groups of the user need to be loaded
+      ldap_load_groups = {{ .Values.config.auth.ldap_load_groups | default "True" }}
+
+      # The filter to find the DN of the user. This filter must contain a python-style placeholder for the login
+      ldap_filter = {{ .Values.config.auth.ldap_filter | default "(&(objectClass=person)(uid={0}))" }}
+
+      # Use ssl on the ldap connection
+      ldap_use_ssl = {{ .Values.config.auth.ldap_use_ssl | default "False" }}
+
+      # The certificate verification mode. NONE, OPTIONAL, default is REQUIRED
+      ldap_ssl_verify_mode = {{ .Values.config.auth.ldap_ssl_verify_mode | default "REQUIRED" }}
+
+      # The path to the CA file in pem format which is used to certificate the server certificate
+      #ldap_ssl_ca_file =
+
+      # Htpasswd filename
+      htpasswd_filename = {{ .Values.config.auth.htpasswd_filename | default "/etc/radicale/users" }}
+
+      # Htpasswd encryption method
+      # Value: plain | bcrypt | md5 | sha256 | sha512 | autodetect
+      # bcrypt requires the installation of 'bcrypt' module.
+      htpasswd_encryption = {{ .Values.config.auth.htpasswd_encryption | default "autodetect" }}
+
+      # Incorrect authentication delay (seconds)
+      delay = {{ .Values.config.auth.delay | default "1" }}
+
+      # Message displayed in the client when a password is needed
+      realm = {{ .Values.config.auth.realm | default "Radicale - Password Required" }}
+
+      # Convert username to lowercase, must be true for case-insensitive auth providers
+      lc_username = {{ .Values.config.auth.lc_username | default "False" }}
+
+      # Strip domain name from username
+      strip_domain = {{ .Values.config.auth.strip_domain | default "False" }}
+
+
+      [rights]
+
+      # Rights backend
+      # Value: none | authenticated | owner_only | owner_write | from_file
+      type = {{ .Values.config.rights.type | default "owner_only" }}
+
+      # File for rights management from_file
+      file = {{ .Values.config.rights.file | default "/etc/radicale/rights" }}
+
+      # Permit delete of a collection (global)
+      permit_delete_collection = {{ .Values.config.rights.permit_delete_collection | default "True" }}
+
+      # Permit overwrite of a collection (global)
+      permit_overwrite_collection = {{ .Values.config.rights.permit_overwrite_collection | default "True" }}
+
+
+      [storage]
+
+      # Storage backend
+      # Value: multifilesystem | multifilesystem_nolock
+      type = {{ .Values.config.storage.type | default "multifilesystem" }}
+
+      # Folder for storing local collections, created if not present
+      filesystem_folder = {{ .Values.config.storage.filesystem_folder | default "/var/lib/radicale/collections" }}
+
+      # Delete sync token that are older (seconds)
+      max_sync_token_age = {{ .Values.config.storage.max_sync_token_age | default "2592000" }}
+
+      # Skip broken item instead of triggering an exception
+      skip_broken_item = {{ .Values.config.storage.skip_broken_item | default "True" }}
+
+      # Command that is run after changes to storage
+      # Example: ([ -d .git ] || git init) && git add -A && (git diff --cached --quiet || git commit -m "Changes by \"%(user)s\"")
+      #hook =
+
+      # Create predefined user collections
+      #
+      # json format:
+      #
+      #  {
+      #    "def-addressbook": {
+      #       "D:displayname": "Personal Address Book",
+      #       "tag": "VADDRESSBOOK"
+      #    },
+      #    "def-calendar": {
+      #       "C:supported-calendar-component-set": "VEVENT,VJOURNAL,VTODO",
+      #       "D:displayname": "Personal Calendar",
+      #       "tag": "VCALENDAR"
+      #    }
+      #  }
+      #
+      #predefined_collections =
+
+
+      [web]
+
+      # Web interface backend
+      # Value: none | internal
+      type = {{ .Values.config.web.type | default "internal" }}
+
+
+      [logging]
+
+      # Threshold for the logger
+      # Value: debug | info | warning | error | critical
+      level = {{ .Values.config.logging.level | default "info" }}
+
+      # Don't include passwords in logs
+      mask_passwords = {{ .Values.config.logging.mask_passwords | default "True" }}
+
+      # Log bad PUT request content
+      bad_put_request_content = {{ .Values.config.logging.bad_put_request_content | default "False" }}
+
+      # Log backtrace on level=debug
+      backtrace_on_debug = {{ .Values.config.logging.backtrace_on_debug | default "False" }}
+
+      # Log request header on level=debug
+      request_header_on_debug = {{ .Values.config.logging.request_header_on_debug | default "False" }}
+
+      # Log request content on level=debug
+      request_content_on_debug = {{ .Values.config.logging.request_content_on_debug | default "False" }}
+
+      # Log response content on level=debug
+      response_content_on_debug = {{ .Values.config.logging.response_content_on_debug | default "False" }}
+
+      # Log rights rule which doesn't match on level=debug
+      rights_rule_doesnt_match_on_debug = {{ .Values.config.logging.rights_rule_doesnt_match_on_debug | default "False" }}
+
+
+      [headers]
+
+      # Additional HTTP headers
+      #Access-Control-Allow-Origin = *
+
+
+      [hook]
+
+      # Hook types
+      # Value: none | rabbitmq
+      type = {{ .Values.config.hook.type | default "none" }}
+      #rabbitmq_endpoint =
+      #rabbitmq_topic =
+      rabbitmq_queue_type = {{ .Values.config.hook.rabbitmq_queue_type | default "classic" }}
+
+
+      [reporting]
+
+      # When returning a free-busy report, limit the number of returned
+      # occurences per event to prevent DOS attacks.
+      max_freebusy_occurrence = {{ .Values.config.reporting.max_freebusy_occurrence | default "10000" }}
+kind: ConfigMap
+metadata: {{ $metadata | nindent 2 }}
+type: Opaque
+{{- end -}}

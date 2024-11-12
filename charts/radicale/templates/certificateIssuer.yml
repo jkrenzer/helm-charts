@@ -1,0 +1,5 @@
+{{ if .Values.certManager.enable }}
+{{- include "common-library.certificateIssuer" (dict "globals" . "override" "radicale.certificateIssuer") -}}
+{{- end -}}
+{{- define "radicale.certificateIssuer" -}}
+{{- end -}}

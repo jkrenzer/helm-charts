@@ -1,0 +1,366 @@
+---
+cert:
+  annotations: {}
+  dnsNames: []
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  name: "{{ .Values.common.name }}-cert"
+certIssuer:
+  annotations: {}
+  labels: {}
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: "{{ .Values.common.name }}-issuer"
+certManager:
+  enable: true
+certSecret:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-cert-secret"
+  template: |
+    labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
+    test: null
+common:
+  annotations: {}
+  labels:
+    app: radicale
+  name: radicale
+config:
+  domain: radicale
+  server:
+    #
+    # CalDAV server hostnames separated by a comma
+    # IPv4 syntax: address:port
+    # IPv6 syntax: [address]:port
+    # Hostname syntax (using "getaddrinfo" to resolve to IPv4/IPv6 adress(es)): hostname:port
+    # For example: 0.0.0.0:9999, [::]:9999, localhost:9999
+    hosts:
+      - 0.0.0.0:{{ if .Values.config.tls.enable -}}8443{{- else -}}8080{{- end }}
+      - "[::]:{{ if .Values.config.tls.enable -}}8443{{- else -}}8080{{- end }}"
+    #
+    # Max parallel connections
+    max_connections: 8
+    #
+    # Max size of request body (bytes)
+    max_content_length: 100000000
+    #
+    # Socket timeout (seconds)
+    timeout: 30
+    #
+    # SSL flag, enable HTTPS protocol
+    ssl: false
+    #
+    # SSL certificate path
+    certificate: /etc/ssl/radicale.cert.pem
+    #
+    # SSL private key
+    key: /etc/ssl/radicale.key.pem
+  #
+  # CA certificate for validating clients. This can be used to secure
+  # TCP traffic between Radicale and a reverse proxy
+  #certificate_authority =
+  #
+  #
+  encoding:
+    #
+    # Encoding for responding requests
+    request: utf-8
+    #
+    # Encoding for storing local collections
+    stock: utf-8
+  #
+  #
+  auth:
+    #
+    # Authentication method
+    # Value: none | htpasswd | remote_user | http_x_remote_user | ldap | denyall
+    type: none
+    #
+    # URI to the LDAP server
+    ldap_uri: ldap://localhost
+    #
+    # The base DN where the user accounts have to be searched
+    ldap_base: ##BASE_DN##
+    #
+    # The reader DN of the LDAP server
+    ldap_reader_dn: CN=ldapreader,CN=Users,##BASE_DN##
+    #
+    # Password of the reader DN
+    ldap_secret: ldapreader-secret
+    #
+    # Path of the file containing password of the reader DN
+    ldap_secret_file: /run/secrets/ldap_password
+    #
+    # If the ldap groups of the user need to be loaded
+    ldap_load_groups: true
+    #
+    # The filter to find the DN of the user. This filter must contain a python-style placeholder for the login
+    ldap_filter: (&(objectClass=person)(uid={0}))
+    #
+    # Use ssl on the ldap connection
+    ldap_use_ssl: false
+    #
+    # The certificate verification mode. NONE, OPTIONAL, default is REQUIRED
+    ldap_ssl_verify_mode: REQUIRED
+    #
+    # The path to the CA file in pem format which is used to certificate the server certificate
+    #ldap_ssl_ca_file =
+    #
+    # Htpasswd filename
+    htpasswd_filename: /etc/radicale/users
+    #
+    # Htpasswd encryption method
+    # Value: plain | bcrypt | md5 | sha256 | sha512 | autodetect
+    # bcrypt requires the installation of 'bcrypt' module.
+    htpasswd_encryption: autodetect
+    #
+    # Incorrect authentication delay (seconds)
+    delay: 1
+    #
+    # Message displayed in the client when a password is needed
+    realm: Radicale - Password Required
+    #
+    # Convert username to lowercase, must be true for case-insensitive auth providers
+    lc_username: false
+    #
+    # Strip domain name from username
+    strip_domain: false
+  #
+  #
+  rights:
+    #
+    # Rights backend
+    # Value: none | authenticated | owner_only | owner_write | from_file
+    type: owner_only
+    #
+    # File for rights management from_file
+    file: /etc/radicale/rights
+    #
+    # Permit delete of a collection (global)
+    permit_delete_collection: true
+    #
+    # Permit overwrite of a collection (global)
+    permit_overwrite_collection: true
+  #
+  #
+  storage:
+    #
+    # Storage backend
+    # Value: multifilesystem | multifilesystem_nolock
+    type: multifilesystem
+    #
+    # Folder for storing local collections, created if not present
+    filesystem_folder: /var/lib/radicale/collections
+    #
+    # Delete sync token that are older (seconds)
+    max_sync_token_age: 2592000
+    #
+    # Skip broken item instead of triggering an exception
+    skip_broken_item: true
+  #
+  # Command that is run after changes to storage
+  # Example: ([ -d .git ] || git init) && git add -A && (git diff --cached --quiet || git commit -m "Changes by \"%(user)s\"")
+  #hook =
+  #
+  # Create predefined user collections
+  #
+  # json format:
+  #
+  #  {
+  #    "def-addressbook": {
+  #       "D:displayname": "Personal Address Book",
+  #       "tag": "VADDRESSBOOK"
+  #    },
+  #    "def-calendar": {
+  #       "C:supported-calendar-component-set": "VEVENT,VJOURNAL,VTODO",
+  #       "D:displayname": "Personal Calendar",
+  #       "tag": "VCALENDAR"
+  #    }
+  #  }
+  #
+  #predefined_collections =
+  #
+  #
+  web:
+    #
+    # Web interface backend
+    # Value: none | internal
+    type: internal
+  #
+  #
+  logging:
+    #
+    # Threshold for the logger
+    # Value: debug | info | warning | error | critical
+    level: info
+    #
+    # Don't include passwords in logs
+    mask_passwords: true
+    #
+    # Log bad PUT request content
+    bad_put_request_content: false
+    #
+    # Log backtrace on level=debug
+    backtrace_on_debug: false
+    #
+    # Log request header on level=debug
+    request_header_on_debug: false
+    #
+    # Log request content on level=debug
+    request_content_on_debug: false
+    #
+    # Log response content on level=debug
+    response_content_on_debug: false
+    #
+    # Log rights rule which doesn't match on level=debug
+    rights_rule_doesnt_match_on_debug: false
+  #
+  #
+  headers: {}
+  #
+  # Additional HTTP headers
+  #Access-Control-Allow-Origin = *
+  #
+  #
+  hook:
+    #
+    # Hook types
+    # Value: none | rabbitmq
+    type: none
+    #rabbitmq_endpoint =
+    #rabbitmq_topic =
+    rabbitmq_queue_type: classic
+  #
+  #
+  reporting:
+    #
+    # When returning a free-busy report, limit the number of returned
+    # occurences per event to prevent DOS attacks.
+    max_freebusy_occurrence: 10000
+  tls:
+    enable: true
+configMap:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-config"
+deployment:
+  annotations: {}
+  autoscaling:
+    enable: false
+    maxReplicas: 100
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 80
+  labels: {}
+  name: "{{ .Values.common.name }}-deploy"
+  replicas: 1
+environmentVars: {}
+image:
+  pullPolicy: IfNotPresent
+  repository: quay.io/radicale/radicale
+  tag: "{{ .Chart.AppVersion }}"
+ingress:
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  class: nginx
+  enable: true
+  labels: {}
+  name: "{{ .Values.common.name }}-ingress"
+kerberosConfigMap:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-kerberos-config"
+livenessProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /health/live
+    port: management-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 30
+  periodSeconds: 5
+persistentVolume:
+  annotations: {}
+  create: true
+  labels: {}
+  name: "{{ .Values.common.name }}-pv"
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pvc"
+pod:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pod"
+readinessProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /health/ready
+    port: management-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 30
+  periodSeconds: 5
+resources:
+  limits:
+    cpu: 1500m
+    memory: 4Gi
+  requests:
+    cpu: 600m
+    memory: 2Gi
+scripts:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-scripts"
+secret:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-secret"
+securityContext:
+  runAsUser: 1000
+service:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-service"
+  portName: http
+  ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+      when: '{{ not .Values.config.tls.enable | default "true" }}'
+    - containerPort: 8443
+      name: https
+      protocol: TCP
+      when: '{{ .Values.config.tls.enable | default "false" }}'
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+serviceAccount:
+  annotations: {}
+  create: true
+  labels: {}
+  name: "{{ .Values.common.name }}-sa"
+startupProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /health/started
+    port: management-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 30
+  periodSeconds: 5
+storage:
+  accessModes:
+    - ReadWriteMany
+  local:
+    basePath: /data
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
+  type: local
+storageClass:
+  annotations: {}
+  create: false
+  labels: {}
+  name: "{{ .Values.storage.storageClassName }}"
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+volumeMounts: []
+volumes: []

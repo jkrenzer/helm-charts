@@ -9,13 +9,11 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ .Values.image.repository }}:{{ tpl .Values.image.tag . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            {{ if .Values.config.tls.enable -}}
-            - containerPort: 8443
-              name: https
-            {{ else -}}
-            - containerPort: 8080
-              name: http
+          ports: 
+            {{- range .Values.service.ports }}
+            {{- if ( tpl (default "true" .when) $ | fromYaml ) }}
+            - {{ toYaml ( omit . "when") | nindent 14 | trim }}
+            {{- end }}
             {{- end }}
           startupProbe:
             {{- tpl (toYaml .Values.startupProbe) . | nindent 12 }}
@@ -26,6 +24,9 @@ spec:
           resources:
             {{- tpl (toYaml .Values.resources) . | nindent 12 }}
           volumeMounts:
+            - mountPath: {{ .Values.config.configFile | default "/etc/radicale/config" }}
+              name: config
+              subPath: config
             - mountPath: {{ .Values.config.storage.filesystem_folder | default "/var/lib/radicale/collections" }}
               name: pv
               subPath: collections
@@ -41,6 +42,9 @@ spec:
               subPath: certs
               {{ end }}
       volumes:
+        - name: config
+          configMap:
+            name: {{ .Values.common.name }}-config
         - name: pv
           persistentVolumeClaim:
             claimName: {{ tpl .Values.persistentVolumeClaim.name . }}

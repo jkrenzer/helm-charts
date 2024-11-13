@@ -25,6 +25,7 @@ common:
     app: radicale
   name: radicale
 config:
+  configFile: /config/config
   domain: radicale
   server:
     #
@@ -34,8 +35,8 @@ config:
     # Hostname syntax (using "getaddrinfo" to resolve to IPv4/IPv6 adress(es)): hostname:port
     # For example: 0.0.0.0:9999, [::]:9999, localhost:9999
     hosts:
-      - 0.0.0.0:{{ if .Values.config.tls.enable -}}8443{{- else -}}8080{{- end }}
-      - "[::]:{{ if .Values.config.tls.enable -}}8443{{- else -}}8080{{- end }}"
+      - 0.0.0.0:{{ if .Values.config.server.ssl -}}8443{{- else -}}8080{{- end }}
+      - "[::]:{{ if .Values.config.server.ssl -}}8443{{- else -}}8080{{- end }}"
     #
     # Max parallel connections
     max_connections: 8
@@ -50,10 +51,10 @@ config:
     ssl: false
     #
     # SSL certificate path
-    certificate: /etc/ssl/radicale.cert.pem
+    certificate: /secret/radicale.cert.pem
     #
     # SSL private key
-    key: /etc/ssl/radicale.key.pem
+    key: /secret/radicale.key.pem
   #
   # CA certificate for validating clients. This can be used to secure
   # TCP traffic between Radicale and a reverse proxy
@@ -88,7 +89,7 @@ config:
     ldap_secret: ldapreader-secret
     #
     # Path of the file containing password of the reader DN
-    ldap_secret_file: /run/secrets/ldap_password
+    ldap_secret_file: /secret/ldap_password
     #
     # If the ldap groups of the user need to be loaded
     ldap_load_groups: true
@@ -106,7 +107,7 @@ config:
     ldap_ssl_ca_file: null
     #
     # Htpasswd filename
-    htpasswd_filename: /etc/radicale/users
+    htpasswd_filename: /config/users
     #
     # Htpasswd encryption method
     # Value: plain | bcrypt | md5 | sha256 | sha512 | autodetect
@@ -133,7 +134,7 @@ config:
     type: owner_only
     #
     # File for rights management from_file
-    file: /etc/radicale/rights
+    file: /config/rights
     #
     # Permit delete of a collection (global)
     permit_delete_collection: true
@@ -149,7 +150,7 @@ config:
     type: multifilesystem
     #
     # Folder for storing local collections, created if not present
-    filesystem_folder: /var/lib/radicale/collections
+    filesystem_folder: /data/collections
     #
     # Delete sync token that are older (seconds)
     max_sync_token_age: 2592000
@@ -267,7 +268,7 @@ livenessProbe:
   httpGet:
     path: /
     port: http
-    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+    scheme: "{{ if .Values.config.server.ssl -}}HTTPS{{- else -}}HTTP{{- end }}"
   initialDelaySeconds: 5
   periodSeconds: 5
 persistentVolume:
@@ -290,7 +291,7 @@ readinessProbe:
   httpGet:
     path: /
     port: http
-    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+    scheme: "{{ if .Values.config.server.ssl -}}HTTPS{{- else -}}HTTP{{- end }}"
   initialDelaySeconds: 5
   periodSeconds: 5
 resources:
@@ -309,7 +310,10 @@ secret:
   labels: {}
   name: "{{ .Values.common.name }}-secret"
 securityContext:
-  runAsUser: 1000
+  runAsUser: 2999
+  runAsGroup: 2999
+  fsGroup: 2999
+  fsGroupChangePolicy: "OnRootMismatch"
 service:
   annotations: {}
   labels: {}
@@ -319,11 +323,11 @@ service:
     - containerPort: 8080
       name: http
       protocol: TCP
-      when: '{{ not .Values.config.tls.enable | default "true" }}'
+      when: "{{ not (.Values.config.server.ssl | default false) }}"
     - containerPort: 8443
       name: https
       protocol: TCP
-      when: '{{ .Values.config.tls.enable | default "false" }}'
+      when: "{{ .Values.config.server.ssl | default false }}"
   selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
 serviceAccount:
   annotations: {}
@@ -335,7 +339,7 @@ startupProbe:
   httpGet:
     path: /
     port: http
-    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
+    scheme: "{{ if .Values.config.server.ssl -}}HTTPS{{- else -}}HTTP{{- end }}"
   initialDelaySeconds: 5
   periodSeconds: 5
 storage:

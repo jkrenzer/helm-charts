@@ -12,13 +12,13 @@ data:
       hosts = {{ . | tpl (join ", " .Values.config.server.hosts) | default "0.0.0.0:5232, [::]:5232" }}
 
       # Max parallel connections
-      max_connections = {{ .Values.config.server.max_connections | default "8" }}
+      max_connections = {{ .Values.config.server.max_connections | default "8" | int }}
 
       # Max size of request body (bytes)
-      max_content_length = {{ .Values.config.server.max_content_length | default "100000000" }}
+      max_content_length = {{ .Values.config.server.max_content_length | default "100000000" | int }}
 
       # Socket timeout (seconds)
-      timeout = {{ .Values.config.server.timeout | default "30" }}
+      timeout = {{ .Values.config.server.timeout | default "30" | int }}
 
       # SSL flag, enable HTTPS protocol
       ssl = {{ .Values.config.server.ssl | default "False" }}
@@ -48,6 +48,8 @@ data:
       # Authentication method
       # Value: none | htpasswd | remote_user | http_x_remote_user | ldap | denyall
       type = {{ .Values.config.auth.type | default "none" }}
+
+      {{ if eq .Values.config.auth.type "ldap" -}}
 
       # URI to the LDAP server
       ldap_uri = {{ .Values.config.auth.ldap_uri | default "ldap://localhost" }}
@@ -79,6 +81,9 @@ data:
       # The path to the CA file in pem format which is used to certificate the server certificate
       #ldap_ssl_ca_file =
 
+      {{ end -}}
+      {{ if eq .Values.config.auth.type "htpasswd" -}}
+
       # Htpasswd filename
       htpasswd_filename = {{ .Values.config.auth.htpasswd_filename | default "/etc/radicale/users" }}
 
@@ -86,6 +91,8 @@ data:
       # Value: plain | bcrypt | md5 | sha256 | sha512 | autodetect
       # bcrypt requires the installation of 'bcrypt' module.
       htpasswd_encryption = {{ .Values.config.auth.htpasswd_encryption | default "autodetect" }}
+
+      {{ end -}}
 
       # Incorrect authentication delay (seconds)
       delay = {{ .Values.config.auth.delay | default "1" }}
@@ -126,7 +133,7 @@ data:
       filesystem_folder = {{ .Values.config.storage.filesystem_folder | default "/var/lib/radicale/collections" }}
 
       # Delete sync token that are older (seconds)
-      max_sync_token_age = {{ .Values.config.storage.max_sync_token_age | default "2592000" }}
+      max_sync_token_age = {{ .Values.config.storage.max_sync_token_age | default "2592000" | int }}
 
       # Skip broken item instead of triggering an exception
       skip_broken_item = {{ .Values.config.storage.skip_broken_item | default "True" }}
@@ -209,5 +216,5 @@ data:
 
       # When returning a free-busy report, limit the number of returned
       # occurences per event to prevent DOS attacks.
-      max_freebusy_occurrence = {{ .Values.config.reporting.max_freebusy_occurrence | default "10000" }}
+      max_freebusy_occurrence = {{ .Values.config.reporting.max_freebusy_occurrence | default "10000" | int }}
 {{- end -}}

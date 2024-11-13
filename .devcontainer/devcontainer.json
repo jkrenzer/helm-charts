@@ -54,7 +54,8 @@
 			"extensions": [
 				"ms-kubernetes-tools.vscode-kubernetes-tools",
 				"GitHub.vscode-github-actions",
-				"GitHub.vscode-pull-request-github"
+				"GitHub.vscode-pull-request-github",
+				"rioj7.command-variable"
 			]
 		}
 	},

@@ -2,35 +2,34 @@
 cert:
   annotations: {}
   dnsNames: []
-  issuer: '{{ tpl .Values.certIssuer.name . }}'
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
   labels: {}
-  name: '{{ .Values.common.name }}-cert'
+  name: "{{ .Values.common.name }}-cert"
 certIssuer:
   annotations: {}
   labels: {}
   # Name is used as domain name by cert-manager internals, so has to be all lower-case!
-  name: '{{ .Values.common.name }}-issuer'
+  name: "{{ .Values.common.name }}-issuer"
 certManager:
   enable: true
 certSecret:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-cert-secret'
+  name: "{{ .Values.common.name }}-cert-secret"
   template: |
     labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
-    test: null
 common:
   annotations: {}
   labels:
     app: keycloak
   name: keycloak
 config:
-  adminPassword: '{{ randAlphaNum 32 }}'
-  adminUser: '{{ randAlphaNum 8 }}'
+  adminPassword: "{{ randAlphaNum 32 }}"
+  adminUser: "{{ randAlphaNum 8 }}"
   db:
     host: null
     name: null
-    password: '{{ randAlphaNum 32 }}'
+    password: "{{ randAlphaNum 32 }}"
     type: dev-file
     user: null
   domain: keycloak
@@ -48,7 +47,7 @@ config:
 configMap:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-config'
+  name: "{{ .Values.common.name }}-config"
 deployment:
   annotations: {}
   autoscaling:
@@ -57,16 +56,16 @@ deployment:
     minReplicas: 1
     targetCPUUtilizationPercentage: 80
   labels: {}
-  name: '{{ .Values.common.name }}-deploy'
+  name: "{{ .Values.common.name }}-deploy"
   replicas: 1
 environmentVars:
   KC_DB: '{{ .Values.config.db.type | required ".config.db.type is required!" | quote }}'
-  KC_DB_URL_DATABASE: '{{ .Values.config.db.name | quote }}'
-  KC_DB_URL_HOST: '{{ .Values.config.db.host | quote }}'
-  KC_DB_USERNAME: '{{ .Values.config.db.user | quote }}'
+  KC_DB_URL_DATABASE: "{{ .Values.config.db.name | quote }}"
+  KC_DB_URL_HOST: "{{ .Values.config.db.host | quote }}"
+  KC_DB_USERNAME: "{{ .Values.config.db.user | quote }}"
   KC_FEATURES: preview
   KC_HEALTH_ENABLED: '"true"'
-  KC_HOSTNAME: '{{ .Values.config.domain | quote }}'
+  KC_HOSTNAME: "{{ .Values.config.domain | quote }}"
   KC_HTTP_HOST: 0.0.0.0
   KC_HTTP_MANAGEMENT_PORT: '"9000"'
   KC_HTTP_MANAGEMENT_RELATIVE_PATH: /
@@ -74,7 +73,7 @@ environmentVars:
 image:
   pullPolicy: IfNotPresent
   repository: quay.io/keycloak/keycloak
-  tag: '{{ .Chart.AppVersion }}'
+  tag: "{{ .Chart.AppVersion }}"
 ingress:
   annotations:
     cert-manager.io/issuer: letsencrypt-http-issuer
@@ -83,40 +82,40 @@ ingress:
   class: nginx
   enable: true
   labels: {}
-  name: '{{ .Values.common.name }}-ingress'
+  name: "{{ .Values.common.name }}-ingress"
 kerberosConfigMap:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-kerberos-config'
+  name: "{{ .Values.common.name }}-kerberos-config"
 livenessProbe:
   failureThreshold: 20
   httpGet:
     path: /health/live
-    port: management-http
-    scheme: '{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}'
+    port: mgmt-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
   initialDelaySeconds: 30
   periodSeconds: 5
 persistentVolume:
   annotations: {}
   create: true
   labels: {}
-  name: '{{ .Values.common.name }}-pv'
+  name: "{{ .Values.common.name }}-pv"
   reclaimPolicy: Delete
   volumeMode: Filesystem
 persistentVolumeClaim:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-pvc'
+  name: "{{ .Values.common.name }}-pvc"
 pod:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-pod'
+  name: "{{ .Values.common.name }}-pod"
 readinessProbe:
   failureThreshold: 20
   httpGet:
     path: /health/ready
-    port: management-http
-    scheme: '{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}'
+    port: mgmt-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
   initialDelaySeconds: 30
   periodSeconds: 5
 resources:
@@ -129,38 +128,47 @@ resources:
 scripts:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-scripts'
+  name: "{{ .Values.common.name }}-scripts"
 secret:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-secret'
+  name: "{{ .Values.common.name }}-secret"
 securityContext:
   runAsUser: 1000
 service:
   annotations: {}
   labels: {}
-  name: '{{ .Values.common.name }}-service'
+  name: "{{ .Values.common.name }}-service"
   portName: http
   ports:
     - containerPort: 8080
       name: http
+      port: 80
       protocol: TCP
+      targetPort: http
     - containerPort: 8443
       name: https
+      port: 443
       protocol: TCP
+      targetPort: https
       when: '{{ .Values.config.tls.enable | default "false" }}'
-  selectors: '{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}'
+    - containerPort: 9000
+      name: mgmt-http
+      protocol: TCP
+      targetPort: mgmt-http
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+  type: ClusterIP
 serviceAccount:
   annotations: {}
   create: true
   labels: {}
-  name: '{{ .Values.common.name }}-sa'
+  name: "{{ .Values.common.name }}-sa"
 startupProbe:
   failureThreshold: 20
   httpGet:
     path: /health/started
-    port: management-http
-    scheme: '{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}'
+    port: mgmt-http
+    scheme: "{{ if .Values.config.tls.enable -}}HTTPS{{- else -}}HTTP{{- end }}"
   initialDelaySeconds: 30
   periodSeconds: 5
 storage:
@@ -168,7 +176,7 @@ storage:
     - ReadWriteMany
   local:
     basePath: /data
-    path: '{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}'
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
   space: 10Gi
   storageClassName: local-storage
   type: local
@@ -176,8 +184,38 @@ storageClass:
   annotations: {}
   create: false
   labels: {}
-  name: '{{ .Values.storage.storageClassName }}'
+  name: "{{ .Values.storage.storageClassName }}"
   provisioner: kubernetes.io/no-provisioner
   volumeBindingMode: WaitForFirstConsumer
-volumeMounts: []
-volumes: []
+volumeMounts:
+  - mountPath: /opt/keycloak/data/import
+    name: pv
+    subPath: import
+  - mountPath: /opt/keycloak/providers
+    name: pv
+    subPath: providers
+  - mountPath: /opt/keycloak/themes
+    name: pv
+    subPath: themes
+  - mountPath: /opt/keycloak/conf
+    name: pv
+    subPath: conf
+  - mountPath: /secrets/ssl/rsa
+    name: certs
+    readOnly: true
+    when: "{{ .Values.config.tls.enable }}"
+  - mountPath: /secrets/ssl/rsa
+    name: pv
+    readOnly: true
+    subPath: certs
+    when: "{{ not .Values.config.tls.enable }}"
+volumes:
+  - name: pv
+    persistentVolumeClaim:
+      claimName: "{{ tpl .Values.persistentVolumeClaim.name . }}"
+  - name: certs
+    secret:
+      secretName: "{{ tpl .Values.certSecret.name . }}"
+    when: "{{ .Values.config.tls.enable }}"
+  - emptyDir: {}
+    name: tmp-files

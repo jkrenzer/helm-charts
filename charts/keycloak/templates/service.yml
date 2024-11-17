@@ -1,15 +1,3 @@
 {{- include "common-library.service" (dict "globals" . "override" "keycloak.service") -}}
 {{- define "keycloak.service" -}}
-spec:
-  ports:
-    - name: http
-      port: 80
-      targetPort: http
-      protocol: TCP
-    {{ if .Values.config.tls.enable -}}
-    - name: https
-      port: 443
-      targetPort: https
-      protocol: TCP
-    {{- end }}
 {{- end -}}

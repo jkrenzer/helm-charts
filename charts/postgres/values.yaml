@@ -1,53 +1,115 @@
 common:
-  name: postgres
   annotations: {}
   labels:
     app: postgres
+  name: postgres
 configMap:
-  name: ""
-database:
-  user: postgres
-  password: "{{ randAlphaNum 32 }}"
-  defaultDbName: postgres
-deployment:
-  name: ""
-pod:
-  labels:
-pv: {}
-pvc: {}
-scripts:
-  name: ""
-secret:
-  name: ""
-service:
-  port: 5432
-  name: postgres
-  selectors:
-    app: postgres
-persistentVolume:
-  create: true
-  name: "{{ .Values.common.name }}-pv"
-  labels: {}
+  name: "{{ .Values.common.name }}-config"
   annotations: {}
+  labels: {}
+database:
+  defaultDbName: postgres
+  password: "{{ randAlphaNum 32 }}"
+  user: postgres
+deployment:
+  name: "{{ .Values.common.name }}-deploy"
+  annotations: {}
+  labels: {}
+  autoscaling:
+    enabled: false
+environmentVars:
+  POSTGRES_DB: "{{ .Values.database.defaultDbName }}"
+  POSTGRES_PASSWORD:
+    valueFrom:
+      secretKeyRef:
+        key: password
+        name: "{{ .Values.secret.name }}"
+  POSTGRES_USER: "{{ .Values.database.user }}"
+image:
+  pullPolicy: IfNotPresent
+  repository: postgres
+  tag: "{{ .Chart.AppVersion }}"
+livenessProbe:
+  tcpSocket:
+    port: postgres-port
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+persistentVolume:
+  annotations: {}
+  create: true
+  labels: {}
+  name: "{{ .Values.common.name }}-pv"
   reclaimPolicy: Delete
   volumeMode: Filesystem
 persistentVolumeClaim:
+  annotations: {}
+  labels: {}
   name: "{{ .Values.common.name }}-pvc"
+pod:
+  labels: {}
+  name: "{{ .Values.common.name }}-pod"
+  annotations: {}
+pv:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pv"
+pvc:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pvc"
+scripts:
+  name: ""
+secret:
+  name: "{{ .Values.common.name }}-secret"
+  annotations: {}
+  labels: {}
+securityContext:
+  fsGroup: 70
+service:
+  name: postgres
+  ports:
+    - containerPort: 5432
+      port: 5432
+      name: postgres-port
+      targetPort: postgres-port
+      protocol: TCP
+  selectors:
+    app: postgres
+  type: ClusterIP
+  labels: {}
+  annotations: {}
+serviceAccount:
+  create: true
+  name: "{{ .Values.common.name }}-sa"
   labels: {}
   annotations: {}
 storage:
-  type: local
+  accessModes:
+    - ReadWriteMany
   local:
-    basePath: "/data"
+    basePath: /data
     path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
   space: 10Gi
   storageClassName: local-storage
-  accessModes:
-    - ReadWriteMany
+  type: local
 storageClass:
-  create: false
-  name: "{{ .Values.storage.storageClassName }}"
-  labels: {}
   annotations: {}
+  create: false
+  labels: {}
+  name: "{{ .Values.storage.storageClassName }}"
   provisioner: kubernetes.io/no-provisioner
   volumeBindingMode: WaitForFirstConsumer
+volumeMounts:
+  - mountPath: /var/lib/postgresql/data
+    name: postgres-pv
+    subPath: data
+  - mountPath: /docker-entrypoint-initdb.d
+    name: postgres-pv
+    subPath: init-scripts
+volumes:
+  - name: postgres-pv
+    persistentVolumeClaim:
+      claimName: "{{ tpl .Values.pvc.name . }}"

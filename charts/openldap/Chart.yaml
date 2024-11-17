@@ -1,22 +1,25 @@
+annotations: {}
 apiVersion: v2
-name: openldap
-version: 0.0.3
-kubeVersion: ""
+appVersion: "2.6"
+dependencies:
+  - name: common-library
+    repository: file://../common-library
+    version: 0.0.1
+deprecated: false
 description: Simple OpenLDAP helm chart based on Tiredofit's docker image
-type: application
+home: The URL of this projects home page (optional)
+icon: https://www.svgrepo.com/show/511864/directory-search-1623.svg
 keywords:
   - openldap
   - slapd
   - backup
-home: The URL of this projects home page (optional)
+kubeVersion: ""
+maintainers:
+  - email: joern.krenzer@gmx.de
+    name: jkrenzer
+    url: https://github.com/jkrenzer
+name: openldap
 sources:
   - https://github.com/tiredofit/docker-openldap
-dependencies: []
-maintainers:
-  - name: jkrenzer
-    email: joern.krenzer@gmx.de
-    url: https://github.com/jkrenzer
-appVersion: "2.6"
-icon: https://www.svgrepo.com/show/511864/directory-search-1623.svg
-deprecated: false
-annotations: {}
+type: application
+version: 0.0.3

@@ -7,6 +7,8 @@ metadata:
   annotations: {{ mustMerge .Values.configMap.annotations .Values.common.annotations | toYaml | nindent 4 }}
 data:
   {{- range $name, $value := .Values.environmentVars }}
+    {{- if kindIs "map" $value | not }}
     {{ $name | upper }}: {{ tpl $value $ }}
+    {{- end }}
   {{- end}}
   

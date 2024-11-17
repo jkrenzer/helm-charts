@@ -4,6 +4,7 @@
 {{- $metadata := include "common-library.makeMetadata" (dict "locals" $locals "commons" $commons "globals" .) -}}
 {{- $locals   := .Values.pod -}}
 {{- $podMetadata := include "common-library.makeMetadata" (dict "locals" $locals "commons" $commons "globals" .) -}}
+{{- $containerIncludeName := (printf "%s.container" .Values.common.name) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
@@ -20,48 +21,31 @@ spec:
     spec:
       {{- with .Values.image.pullSecrets }}
       imagePullSecrets: 
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ tpl .Values.serviceAccount.name . }}
+      {{- with .Values.pod.securityContext }}
       securityContext: 
-        {{- toYaml .Values.pod.securityContext | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      hostname: {{ tpl ( .Values.pod.hostname | default  .Values.common.name  ) . }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{ .Values.image.repository }}:{{ tpl .Values.image.tag . }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports: 
-            {{- range .Values.service.ports }}
-            {{- if ( tpl (default "true" .when) $ | fromYaml ) }}
-            - {{ toYaml ( omit . "when") | nindent 14 | trim }}
-            {{- end }}
-            {{- end }}
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts: 
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+        - {{ include "common-library.container" (dict "globals" . "override" $containerIncludeName) | nindent 10 }}
       {{- with .Values.volumes }}
       volumes: 
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (include "common-library.util.when" (list . $)) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector: 
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity: 
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations: 
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
 {{- end -}}
 {{- define "common-library.deployment" -}}

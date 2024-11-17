@@ -1,0 +1,22 @@
+#!/bin/bash -e
+directories=${1:-${WORKSPACE_DIR:-.}/charts/*}
+files=("Chart.yaml" "values.yaml")
+
+# Check if yq is installed
+if ! command -v yq &> /dev/null; then
+  echo "yq command not found. Please install yq to proceed."
+  exit 1
+fi
+
+for directory in $directories; do
+  directory=$(realpath "$directory")
+  if [ -d "$directory" ]; then
+    for file in "${files[@]}"; do
+      filepath=$(realpath "$directory/$file")
+      if [ -f "$filepath" ]; then
+        echo "Formatting $filepath"
+        yq -i -P 'sort_keys(..)' "$filepath"
+      fi
+    done
+  fi
+done

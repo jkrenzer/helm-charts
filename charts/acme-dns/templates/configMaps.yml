@@ -1,20 +1,6 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ default (tpl "{{ .Values.common.name }}-config" $ ) .Values.configMap.name}}
-  namespace: {{ .Release.Namespace }}
-  labels:
-  {{- range $name, $value := .Values.common.labels}}
-    {{ $name }}: {{ $value}}
-  {{- end}}
-  {{- range $name, $value := .Values.configMap.labels}}
-    {{ $name }}: {{ $value}}
-  {{- end}}
+{{- include "common-library.configMap" (dict "globals" . "override" "acme-dns.configMap") -}}
+{{- define "acme-dns.configMap" -}}
 data:
-  DB_USER: {{ $db_user        :=  default  "acme-dns"                       .Values.database.user          }}
-  DB_NAME: {{ $db_name        :=  default  "acme-dns"                       .Values.database.name          }}
-  DB_HOST: {{ $db_host        :=  default  "localhost"                      .Values.database.host          }}
-  DB_PORT: {{ $db_port        :=  default  "5432"                           .Values.database.port          }}
   config.cfg: |-
     {{- $db_user        :=  default  "acme-dns"                       .Values.database.user          -}}
     {{- $db_password    :=                                            .Values.database.password      -}}
@@ -107,6 +93,6 @@ data:
     # logfile = "./acme-dns.log"
     # format, either "json" or "text"
     logformat = "text"
-
+{{- end }}
   
   

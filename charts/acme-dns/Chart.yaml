@@ -1,22 +1,25 @@
+annotations: {}
 apiVersion: v2
-name: acme-dns
-version: 0.0.2
-kubeVersion: ""
+appVersion: v1.0
+dependencies:
+  - name: common-library
+    repository: file://../common-library
+    version: 0.0.1
+deprecated: false
 description: Simple ACME-DNS server helm chart
-type: application
+home: The URL of this projects home page (optional)
+icon: https://www.svgrepo.com/show/379134/dns.svg
 keywords:
   - acme
   - letsencrypt
   - dns
-home: The URL of this projects home page (optional)
+kubeVersion: ""
+maintainers:
+  - email: joern.krenzer@gmx.de
+    name: jkrenzer
+    url: https://github.com/jkrenzer
+name: acme-dns
 sources:
   - https://github.com/joohoi/acme-dns
-dependencies: []
-maintainers:
-  - name: jkrenzer
-    email: joern.krenzer@gmx.de
-    url: https://github.com/jkrenzer
-appVersion: v1.0
-icon: https://www.svgrepo.com/show/379134/dns.svg
-deprecated: false
-annotations: {}
+type: application
+version: 0.0.3

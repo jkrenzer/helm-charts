@@ -1,0 +1,3 @@
+{{- include "common-library.service" (dict "globals" . "override" "radicale.service") -}}
+{{- define "radicale.service" -}}
+{{- end -}}

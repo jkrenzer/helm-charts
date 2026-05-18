@@ -1,22 +1,25 @@
+annotations: {}
 apiVersion: v2
-name: postgres
-version: 0.0.2
-kubeVersion: ""
+appVersion: "15.3"
+dependencies:
+  - name: common-library
+    repository: file://../common-library
+    version: 0.0.1
+deprecated: false
 description: Simple Postgres database server
-type: application
+home: https://www.postgresql.org/
+icon: https://www.svgrepo.com/show/379134/dns.svg
 keywords:
   - postgres
   - database
   - init scripts
-home: https://www.postgresql.org/
+kubeVersion: ""
+maintainers:
+  - email: joern.krenzer@gmx.de
+    name: jkrenzer
+    url: https://github.com/jkrenzer
+name: postgres
 sources:
   - https://github.com/postgres/postgres
-dependencies: []
-maintainers:
-  - name: jkrenzer
-    email: joern.krenzer@gmx.de
-    url: https://github.com/jkrenzer
-appVersion: "15.3"
-icon: https://www.svgrepo.com/show/379134/dns.svg
-deprecated: false
-annotations: {}
+type: application
+version: 0.0.3

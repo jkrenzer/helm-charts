@@ -1,156 +1,244 @@
-certManager:
-  enable: true
 cert:
-  name: "{{ .Values.common.name }}-cert"
+  annotations: {}
   dnsNames:
     - example.com
-  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  issuer: '{{ tpl .Values.certIssuer.name . }}'
   labels: {}
-  annotations: {}
+  name: '{{ .Values.common.name }}-cert'
 certIssuer:
+  annotations: {}
+  labels: {}
   # Name is used as domain name by cert-manager internals, so has to be all lower-case!
-  name: "{{ .Values.common.name }}-issuer"
-  labels: {}
-  annotations: {}
+  name: '{{ .Values.common.name }}-issuer'
+certManager:
+  enable: true
 certSecret:
-  name: "{{ .Values.common.name }}-cert-secret"
-  labels: {}
   annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-cert-secret'
   template: |
     labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
 common:
-  name: mailserver
+  annotations: {}
   labels:
     app: mailserver
-  annotations: {}
-configMap:
-  name: "{{ .Values.common.name }}-config"
-  labels: {}
-  annotations: {}
-deployment:
-  name: "{{ .Values.common.name }}-deploy"
-  labels: {}
-  annotations:
-    ignore-check.kube-linter.io/run-as-non-root: >-
-      'mailserver' needs to run as root
-    ignore-check.kube-linter.io/privileged-ports: >-
-      'mailserver' needs privilegdes ports
-    ignore-check.kube-linter.io/no-read-only-root-fs: >-
-      There are too many files written to make The
-      root FS read-only
-  replicas: 1
-  resources:
-    limits:
-      memory: 4Gi
-      cpu: 1500m
-    requests:
-      memory: 2Gi
-      cpu: 600m
-persistentVolume:
-  create: true
-  name: "{{ .Values.common.name }}-pv"
-  labels: {}
-  annotations: {}
-  reclaimPolicy: Delete
-  volumeMode: Filesystem
-persistentVolumeClaim:
-  name: "{{ .Values.common.name }}-pvc"
-  labels: {}
-  annotations: {}
-storage:
-  type: local
-  local:
-    basePath: "/data"
-    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
-  space: 10Gi
-  storageClassName: local-storage
-  accessModes:
-    - ReadWriteMany
-storageClass:
-  create: false
-  name: "{{ .Values.storage.storageClassName }}"
-  labels: {}
-  annotations: {}
-  provisioner: kubernetes.io/no-provisioner
-  volumeBindingMode: WaitForFirstConsumer
-pod:
-  name: "{{ .Values.common.name }}-pod"
-  labels: {}
-  annotations: {}
-scripts:
-  name: "{{ .Values.common.name }}-scripts"
-  labels: {}
-  annotations: {}
-secret:
-  name: "{{ .Values.common.name }}-secret"
-  labels: {}
-  annotations: {}
-service:
-  name: "{{ .Values.common.name }}-service"
-  labels: {}
-  annotations: {}
-  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+  name: mailserver
 config:
-  adminPassword: "{{ randAlphaNum 32 }}"
-  configPassword: "{{ randAlphaNum 32 }}"
-  domain: "mailserver"
-  schemaType: "nis"
-  logLevel: info
-  supervisorLogLevel: info
-  enableTls: true
+  accounts:
+    - email: '{{ .Values.config.postmaster }}@{{ .Values.config.domain }}'
+      password: '{{ randAlphaNum 32 }}'
+  adminPassword: '{{ randAlphaNum 32 }}'
+  configPassword: '{{ randAlphaNum 32 }}'
+  domain: mailserver.local
   enablePasswordPolicy: true
-  postmaster: postmaster
+  enableTls: true
   ldap:
+    baseDn: dc=mail
     enable: false
     enable_tls: false
-    baseDn: dc=mail
     host: localhost
+  logLevel: info
+  postmaster: postmaster
+  schemaType: nis
+  supervisorLogLevel: info
   trustedHosts: |-
     127.0.0.1
     ::1
     localhost
     {{ .Values.config.domain }}
+configMap:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-config'
+deployment:
+  annotations:
+    ignore-check.kube-linter.io/no-read-only-root-fs: There are too many files written to make The root FS read-only
+    ignore-check.kube-linter.io/privileged-ports: '''mailserver'' needs privilegdes ports'
+    ignore-check.kube-linter.io/run-as-non-root: '''mailserver'' needs to run as root'
+  autoscaling:
+    enabled: false
+    maxReplicas: 2
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 10
+  labels: {}
+  name: '{{ .Values.common.name }}-deploy'
+  replicas: 1
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 4Gi
+    requests:
+      cpu: 600m
+      memory: 2Gi
 environmentVars:
-  LOG_LEVEL: "{{ .Values.config.logLevel }}"
-  POSTSCREEN_ACTION: "drop"
-  OVERRIDE_HOSTNAME: "{{ .Values.config.domain }}"
-  FAIL2BAN_BLOCKTYPE: "drop"
-  POSTMASTER_ADDRESS: "{{ .Values.config.postmaster }}@{{ .Values.config.domain }}"
-  UPDATE_CHECK_INTERVAL: "7d"
-  POSTFIX_INET_PROTOCOLS: "ipv4"
-  ONE_DIR: "1"
-  ENABLE_CLAMAV: "1"
-  ENABLE_POSTGREY: "1"
-  ENABLE_FAIL2BAN: "0"
+  # LDAP
+  ACCOUNT_PROVISIONER: '{{ if .Values.config.ldap.enable }}LDAP{{ end }}'
   AMAVIS_LOGLEVEL: "-1"
-  SPOOF_PROTECTION: "1"
-  MOVE_SPAM_TO_JUNK: "1"
-  ENABLE_UPDATE_CHECK: "1"
+  DOVECOT_PASS_ATTRS: uid=user,userPassword=password
+  DOVECOT_USER_ATTRS: =home=/var/mail/vhome/%{ldap:mailMessageStore}/,=mail=maildir:/var/mail/vmail/%{ldap:mailMessageStore}/,=uid=5000,=gid=5000
+  DOVECOT_USER_FILTER: (&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailLocalAddress=%u)(uid=%u)))
+  ENABLE_CLAMAV: "1"
+  ENABLE_FAIL2BAN: "0"
+  ENABLE_LDAP: '{{ .Values.config.ldap.enable | int }}'
+  ENABLE_POSTGREY: "1"
+  ENABLE_SASLAUTHD: "0"
   ENABLE_SPAMASSASSIN: "1"
-  SUPERVISOR_LOGLEVEL: "{{ .Values.config.supervisorLogLevel }}"
+  ENABLE_UPDATE_CHECK: "1"
+  FAIL2BAN_BLOCKTYPE: drop
+  LDAP_QUERY_FILTER_ALIAS: (&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(mailAlternateAddress=%s))
+  LDAP_QUERY_FILTER_DOMAIN: (&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailLocalAddress=*@%s)(mailAlternateAddress=*@%s)))
+  LDAP_QUERY_FILTER_GROUP: (&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(memberOf=cn=%u,ou=groups,{{ .Values.config.ldap.baseDn }}))
+  LDAP_QUERY_FILTER_SENDERS: (&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailAlternateAddress=%s)(mailLocalAddress=%s)))
+  LDAP_QUERY_FILTER_USER: (&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(uid=%s)(mailLocalAddress=%s)))
+  LDAP_RESULT_ATTRIBUTE: mailLocalAddress, uid, mailMessageStore
+  LDAP_SEARCH_BASE: '{{ .Values.config.ldap.baseDn}}'
+  LDAP_SERVER_HOST: '{{ .Values.config.ldap.host}}'
+  LDAP_START_TLS: '{{ if .Values.config.ldap.enable_tls }}yes{{ else }}no{{ end }}'
+  LOG_LEVEL: '{{ .Values.config.logLevel }}'
+  MOVE_SPAM_TO_JUNK: "1"
+  ONE_DIR: "1"
+  OVERRIDE_HOSTNAME: '{{ tpl ( .Values.config.domain | default (printf "%s.local" .Values.common.name)  ) . }}'
+  POSTFIX_INET_PROTOCOLS: ipv4
+  POSTMASTER_ADDRESS: '{{ .Values.config.postmaster }}@{{ .Values.config.domain }}'
+  POSTSCREEN_ACTION: drop
   SPAMASSASSIN_SPAM_TO_INBOX: "1"
-  # SSL/TLS
-  TLS_LEVEL: modern
-  SSL_TYPE: manual
+  SPOOF_PROTECTION: "1"
   SSL_CERT_PATH: /secrets/ssl/rsa/tls.crt
   SSL_KEY_PATH: /secrets/ssl/rsa/tls.key
-  # LDAP
-  ACCOUNT_PROVISIONER: "{{ if .Values.config.ldap.enable }}LDAP{{ end }}"
-  ENABLE_LDAP: "{{ .Values.config.ldap.enable | int }}"
-  LDAP_START_TLS: "{{ if .Values.config.ldap.enable_tls }}yes{{ else }}no{{ end }}"
-  LDAP_RESULT_ATTRIBUTE: "mailLocalAddress, uid, mailMessageStore"
-  LDAP_SERVER_HOST: "{{ .Values.config.ldap.host}}"
-  LDAP_SEARCH_BASE: "{{ .Values.config.ldap.baseDn}}"
-  LDAP_QUERY_FILTER_USER: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(uid=%s)(mailLocalAddress=%s)))"
-  LDAP_QUERY_FILTER_GROUP: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(memberOf=cn=%u,ou=groups,{{ .Values.config.ldap.baseDn }}))"
-  LDAP_QUERY_FILTER_ALIAS: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(mailAlternateAddress=%s))"
-  LDAP_QUERY_FILTER_DOMAIN: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailLocalAddress=*@%s)(mailAlternateAddress=*@%s)))"
-  LDAP_QUERY_FILTER_SENDERS: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailAlternateAddress=%s)(mailLocalAddress=%s)))"
-  ENABLE_SASLAUTHD: "0"
-  DOVECOT_USER_FILTER: "(&(memberOf=cn=mailrecipients,ou=group,{{ .Values.config.ldap.baseDn }})(|(mailLocalAddress=%u)(uid=%u)))"
-  DOVECOT_PASS_ATTRS: "uid=user,userPassword=password"
-  DOVECOT_USER_ATTRS: "=home=/var/mail/vhome/%{ldap:mailMessageStore}/,=mail=maildir:/var/mail/vmail/%{ldap:mailMessageStore}/,=uid=5000,=gid=5000"
-
-# Override settings of dependencies
-cert-Manager:
-  installCRDs: true
+  SSL_TYPE: manual
+  SUPERVISOR_LOGLEVEL: '{{ .Values.config.supervisorLogLevel }}'
+  # SSL/TLS
+  TLS_LEVEL: modern
+  UPDATE_CHECK_INTERVAL: 7d
+image:
+  pullPolicy: IfNotPresent
+  repository: mailserver/docker-mailserver
+  tag: '{{ .Chart.AppVersion }}'
+ingress:
+  annotations: {}
+  class: nginx
+  enable: false
+  labels: {}
+  name: '{{ .Values.common.name }}-ingress'
+livenessProbe: {}
+persistentVolume:
+  annotations: {}
+  create: true
+  labels: {}
+  name: '{{ .Values.common.name }}-pv'
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-pvc'
+pod:
+  annotations: {}
+  hostname: null
+  labels: {}
+  name: '{{ .Values.common.name }}-pod'
+readinessProbe:
+  failureThreshold: 6
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  successThreshold: 1
+  tcpSocket:
+    port: smtp-port
+  timeoutSeconds: 5
+scripts:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-scripts'
+secret:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-secret'
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    add:
+      # file permission capabilities
+      - CHOWN
+      - FOWNER
+      - MKNOD
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      # network capabilities
+      # needed for Fail2Ban
+      - NET_ADMIN
+      - NET_RAW
+      - NET_BIND_SERVICE
+      # miscellaneous  capabilities
+      - SYS_CHROOT
+      - KILL
+    drop:
+      - ALL
+  privileged: false
+  readOnlyRootFilesystem: false
+  runAsGroup: 0
+  runAsNonRoot: false
+  runAsUser: 0
+  seccompProfile:
+    type: RuntimeDefault
+service:
+  annotations: {}
+  labels: {}
+  name: '{{ .Values.common.name }}-service'
+  ports:
+    - containerPort: 25
+      hostPort: 25
+      name: transfer-port
+      port: 25
+      protocol: TCP
+      targetPort: transfer-port
+    - containerPort: 143
+      hostPort: 143
+      name: imap-port
+      port: 143
+      protocol: TCP
+      targetPort: imap-port
+    - containerPort: 465
+      hostPort: 465
+      name: smtps-port
+      port: 465
+      protocol: TCP
+      targetPort: smtps-port
+    - containerPort: 587
+      hostPort: 587
+      name: smtp-port
+      port: 587
+      protocol: TCP
+      targetPort: smtp-port
+    - containerPort: 993
+      hostPort: 993
+      name: imaps-port
+      port: 993
+      protocol: TCP
+      targetPort: imaps-port
+  selectors: '{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}'
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: true
+  labels: {}
+  name: '{{ .Values.common.name }}-sa'
+startupProbe: {}
+storage:
+  accessModes:
+    - ReadWriteMany
+  local:
+    basePath: /data
+    path: '{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}'
+  space: 10Gi
+  storageClassName: local-storage
+  type: local
+storageClass:
+  annotations: {}
+  create: false
+  labels: {}
+  name: '{{ .Values.storage.storageClassName }}'
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+volumeMounts: []
+volumes: []

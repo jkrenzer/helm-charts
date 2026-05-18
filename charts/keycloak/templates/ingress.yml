@@ -1,10 +1,7 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ tpl .Values.ingress.name . }}
-  namespace: {{ .Release.Namespace }}
-  labels: {{ mustMerge .Values.ingress.labels .Values.common.labels | toYaml | nindent 4}}
-  annotations: {{ mustMerge .Values.ingress.annotations .Values.common.annotations | toYaml | nindent 4 }}
+{{- if .Values.ingress.enable -}}
+{{- include "common-library.ingress" (dict "globals" . "override" "keycloak.ingress") -}}
+{{- end -}}
+{{- define "keycloak.ingress" -}}
 spec:
   rules:
     - host: {{ .Values.config.domain }}
@@ -21,7 +18,4 @@ spec:
                   {{- end }}
             path: /
             pathType: Prefix
-  tls:
-    - hosts:
-        - {{ .Values.config.domain }}
-      secretName: {{ tpl .Values.certSecret.name . }}
+{{- end -}}

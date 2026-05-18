@@ -1,0 +1,5 @@
+{{- if .Values.persistentVolume.create -}}
+{{- include "common-library.persistentVolume" (dict "globals" . "override" "radicale.persistentVolume") -}}
+{{- end -}}
+{{- define "radicale.persistentVolume" -}}
+{{- end -}}

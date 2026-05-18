@@ -1,0 +1,3 @@
+{{- include "common-library.persistentVolumeClaim" (dict "globals" . "override" "radicale.persistentVolumeClaim") -}}
+{{- define "radicale.persistentVolumeClaim" -}}
+{{- end -}}

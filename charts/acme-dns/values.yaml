@@ -1,36 +1,116 @@
 common:
-  name: acme-dns
+  annotations: {}
   labels:
     app: acme-dns
+  name: acme-dns
 configMap:
-  name: ""
+  name: "{{ .Values.common.name }}-config"
+  annotations: {}
+  labels: {}
 database:
-  # # For postgres SQL db
-  host: ""
-  port: ""
-  user: ""
-  password: ""
-  type: sqlite3
+  name: "{{ .Values.common.name }}"
+  password: "{{ randAlphaNum 32 }}"
+  user: postgres
+  host: postgres
+  port: 5432
 deployment:
-  name: ""
-jobs:
-  createDb:
-    container:
-      name: ""
-    name: ""
-    pod:
-      name: ""
-nameserver:
-  listenIp: 0.0.0.0
-  public:
-    ipV4:
-    ipV6:
+  name: "{{ .Values.common.name }}-deploy"
+  annotations: {}
+  labels: {}
+  autoscaling:
+    enabled: false
+environmentVars: {}
+image:
+  pullPolicy: IfNotPresent
+  repository: joohoi/acme-dns
+  tag: "{{ .Chart.AppVersion }}"
+livenessProbe:
+  tcpSocket:
+    port: postgres-port
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+persistentVolume:
+  annotations: {}
+  create: true
+  labels: {}
+  name: "{{ .Values.common.name }}-pv"
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pvc"
 pod:
-  labels:
+  labels: {}
+  name: "{{ .Values.common.name }}-pod"
+  annotations: {}
+pv:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pv"
+pvc:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pvc"
 scripts:
   name: ""
 secret:
-  name: ""
+  name: "{{ .Values.common.name }}-secret"
+  annotations: {}
+  labels: {}
+securityContext:
+  fsGroup: 70
 service:
+  name: postgres
+  ports:
+    - name: dns-port-tcp
+      containerPort: 53
+      port: 53
+      protocol: TCP
+    - name: dns-port-udp
+      containerPort: 53
+      port: 53
+      protocol: UDP
+    - name: http-port
+      containerPort: 80
+      port: 80
+    - name: https-port
+      containerPort: 443
+      port: 443
   selectors:
-    app: acme-dns
+    app: postgres
+  type: ClusterIP
+  labels: {}
+  annotations: {}
+serviceAccount:
+  create: true
+  name: "{{ .Values.common.name }}-sa"
+  labels: {}
+  annotations: {}
+storage:
+  accessModes:
+    - ReadWriteMany
+  local:
+    basePath: /data
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
+  type: local
+storageClass:
+  annotations: {}
+  create: false
+  labels: {}
+  name: "{{ .Values.storage.storageClassName }}"
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+volumeMounts:
+  - mountPath: /etc/acme-dns/config.cfg
+    name: config
+    subPath: config.cfg
+volumes:
+  - name: config
+    configMap:
+      name: "{{ .Values.configMap.name}}"

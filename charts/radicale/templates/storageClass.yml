@@ -1,0 +1,5 @@
+{{ if .Values.storageClass.create -}}
+{{- include "common-library.storageClass" (dict "globals" . "override" "radicale.storageClass") -}}
+{{- end -}}
+{{- define "radicale.storageClass" -}}
+{{- end }}

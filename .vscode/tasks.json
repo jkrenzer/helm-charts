@@ -4,9 +4,36 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Update all chart dependencies",
+            "type": "shell",
+            "command": "bin/update-chart-dependencies"
+        },
+        {
+            "label": "Update single chart dependencies",
+            "type": "shell",
+            "command": "bin/update-chart-dependencies ${input:selectChart}"
+        },
+        {
+            "label": "Format all YAML files",
+            "type": "shell",
+            "command": "bin/format-yaml-files"
+        },
+        {
+            "label": "Format single chart's YAML files",
+            "type": "shell",
+            "command": "bin/format-yaml-files ${input:selectChart}"
+        },
+        {
             "label": "Lint charts",
             "type": "shell",
-            "command": "ct lint --lint-conf .ct/lintconfig.yaml "
+            "dependsOn": "Update chart dependencies",
+            "command": "ct lint --lint-conf .ct/lintconfig.yaml"
+        },
+        {
+            "label": "Lint single chart",
+            "type": "shell",
+            "dependsOn": "Update single chart dependencies",
+            "command": "ct lint --lint-conf .ct/lintconfig.yaml --charts ${input:selectChart}"
         },
         {
             "label": "Ensure directories",
@@ -16,7 +43,26 @@
         {
             "label": "Lint, install and test charts",
             "type": "shell",
-            "command": "ct lint-and-install --lint-conf .ct/lintconfig.yaml --helm-extra-set-args \"--set=storage.hosts={docker-desktop} --set=storage.local.basePath=/run/desktop/mnt/host/wsl/data\""
+            "dependsOn": "Update chart dependencies",
+            "command": "ct lint-and-install --lint-conf .ct/lintconfig.yaml --excluded-charts common-library --helm-extra-set-args \"--set=storage.hosts={docker-desktop} --set=storage.local.basePath=/run/desktop/mnt/host/wsl/data\""
+        },
+        {
+            "label": "Lint, install and test single chart",
+            "type": "shell",
+            "dependsOn": "Update single chart dependencies",
+            "command": "ct lint-and-install --charts ${input:selectChart} --lint-conf .ct/lintconfig.yaml --excluded-charts common-library --helm-extra-set-args \"--set=storage.hosts={docker-desktop} --set=storage.local.basePath=/run/desktop/mnt/host/wsl/data\""
+        }
+    ],
+    "inputs": [
+        {
+            "id": "selectChart",
+            "type": "command",
+            "command": "extension.commandvariable.file.pickFile",
+            "args": {
+                "description": "Pick chart directory to process",
+                "include": "charts/*/Chart.{yaml,yml}",
+                "showDirs": true
+            }
         }
     ]
 }

@@ -1,22 +1,25 @@
+annotations: {}
 apiVersion: v2
-name: docker-mailserver
-version: 0.0.2
-kubeVersion: ""
+appVersion: 13.3.0
+dependencies:
+  - name: common-library
+    repository: file://../common-library
+    version: 0.0.1
+deprecated: false
 description: Docker-Mailserver helm chart
-type: application
+home: https://docker-mailserver.github.io/docker-mailserver/v13.3/
+icon: https://avatars.githubusercontent.com/u/76868633?s=48&v=4
 keywords:
   - postfix
   - dovecot
   - mail
-home: https://docker-mailserver.github.io/docker-mailserver/v13.3/
+kubeVersion: ""
+maintainers:
+  - email: joern.krenzer@gmx.de
+    name: jkrenzer
+    url: https://github.com/jkrenzer
+name: docker-mailserver
 sources:
   - https://github.com/docker-mailserver/docker-mailserver
-dependencies: []
-maintainers:
-  - name: jkrenzer
-    email: joern.krenzer@gmx.de
-    url: https://github.com/jkrenzer
-appVersion: "13.3.0"
-icon: https://avatars.githubusercontent.com/u/76868633?s=48&v=4
-deprecated: false
-annotations: {}
+type: application
+version: 0.0.3

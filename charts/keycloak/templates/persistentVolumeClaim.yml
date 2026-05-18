@@ -1,14 +1,3 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ tpl .Values.persistentVolumeClaim.name . }}
-  namespace: {{ .Release.Namespace }}
-  labels: {{ mustMerge .Values.persistentVolumeClaim.labels .Values.common.labels | toYaml | nindent 4}}
-  annotations: {{ mustMerge .Values.persistentVolumeClaim.annotations .Values.common.annotations | toYaml | nindent 4 }}
-spec:
-  storageClassName: {{ tpl .Values.storage.storageClassName . }}
-  volumeName: {{ tpl .Values.persistentVolume.name . }}
-  accessModes: {{ .Values.storage.accessModes | toYaml | nindent 4 }}
-  resources:
-    requests:
-      storage: {{ .Values.storage.space }}
+{{- include "common-library.persistentVolumeClaim" (dict "globals" . "override" "keycloak.persistentVolumeClaim") -}}
+{{- define "keycloak.persistentVolumeClaim" -}}
+{{- end -}}

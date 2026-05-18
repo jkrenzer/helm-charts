@@ -1,0 +1,400 @@
+---
+cert:
+  annotations: {}
+  dnsNames: []
+  issuer: "{{ tpl .Values.certIssuer.name . }}"
+  labels: {}
+  name: "{{ .Values.common.name }}-cert"
+certIssuer:
+  annotations: {}
+  labels: {}
+  # Name is used as domain name by cert-manager internals, so has to be all lower-case!
+  name: "{{ .Values.common.name }}-issuer"
+certManager:
+  enable: true
+certSecret:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-cert-secret"
+  template: |
+    labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 2 }}
+common:
+  annotations: {}
+  labels:
+    app: radicale
+  name: radicale
+config:
+  #
+  #
+  auth:
+    #
+    # Incorrect authentication delay (seconds)
+    delay: 1
+    #
+    # Htpasswd encryption method
+    # Value: plain | bcrypt | md5 | sha256 | sha512 | autodetect
+    # bcrypt requires the installation of 'bcrypt' module.
+    htpasswd_encryption: autodetect
+    #
+    # Htpasswd filename
+    htpasswd_filename: /config/users
+    #
+    # Convert username to lowercase, must be true for case-insensitive auth providers
+    lc_username: false
+    #
+    # The base DN where the user accounts have to be searched
+    ldap_base: DC=example,DC=com
+    #
+    # The filter to find the DN of the user. This filter must contain a python-style placeholder for the login
+    ldap_filter: (&(objectClass=person)(uid={0}))
+    #
+    # If the ldap groups of the user need to be loaded
+    ldap_load_groups: true
+    #
+    # The reader DN of the LDAP server
+    ldap_reader_dn: CN=ldapreader,CN=Users,DC=example,DC=com
+    #
+    # Password of the reader DN
+    ldap_secret: ldapreader-secret
+    #
+    # Path of the file containing password of the reader DN
+    ldap_secret_file: /secret/ldap_password
+    #
+    # The path to the CA file in pem format which is used to certificate the server certificate
+    ldap_ssl_ca_file: null
+    #
+    # The certificate verification mode. NONE, OPTIONAL, default is REQUIRED
+    ldap_ssl_verify_mode: REQUIRED
+    #
+    # URI to the LDAP server
+    ldap_uri: ldap://localhost
+    #
+    # Use ssl on the ldap connection
+    ldap_use_ssl: false
+    #
+    # Message displayed in the client when a password is needed
+    realm: Radicale - Password Required
+    #
+    # Strip domain name from username
+    strip_domain: false
+    #
+    # Authentication method
+    # Value: none | htpasswd | remote_user | http_x_remote_user | ldap | denyall
+    type: none
+  configFile: /config/config
+  domain: radicale
+  #
+  # CA certificate for validating clients. This can be used to secure
+  # TCP traffic between Radicale and a reverse proxy
+  # certificate_authority =
+  #
+  #
+  encoding:
+    #
+    # Encoding for responding requests
+    request: utf-8
+    #
+    # Encoding for storing local collections
+    stock: utf-8
+  #
+  #
+  headers: {}
+  #
+  hook:
+    rabbitmq_endpoint: null
+    rabbitmq_queue_type: classic
+    rabbitmq_topic: null
+    #
+    # Hook types
+    # Value: none | rabbitmq
+    type: none
+  #
+  #
+  logging:
+    #
+    # Log backtrace on level=debug
+    backtrace_on_debug: false
+    #
+    # Log bad PUT request content
+    bad_put_request_content: false
+    #
+    # Threshold for the logger
+    # Value: debug | info | warning | error | critical
+    level: info
+    #
+    # Don't include passwords in logs
+    mask_passwords: true
+    #
+    # Log request content on level=debug
+    request_content_on_debug: false
+    #
+    # Log request header on level=debug
+    request_header_on_debug: false
+    #
+    # Log response content on level=debug
+    response_content_on_debug: false
+    #
+    # Log rights rule which doesn't match on level=debug
+    rights_rule_doesnt_match_on_debug: false
+  #
+  #
+  reporting:
+    #
+    # When returning a free-busy report, limit the number of returned
+    # occurences per event to prevent DOS attacks.
+    max_freebusy_occurrence: 10000
+  #
+  #
+  rights:
+    #
+    # File for rights management from_file
+    file: /config/rights
+    #
+    # Permit delete of a collection (global)
+    permit_delete_collection: true
+    #
+    # Permit overwrite of a collection (global)
+    permit_overwrite_collection: true
+    #
+    # Rights backend
+    # Value: none | authenticated | owner_only | owner_write | from_file
+    type: owner_only
+  server:
+    #
+    # SSL certificate path
+    certificate: /secret/radicale.cert.pem
+    #
+    # CalDAV server hostnames separated by a comma
+    # IPv4 syntax: address:port
+    # IPv6 syntax: [address]:port
+    # Hostname syntax (using "getaddrinfo" to resolve to IPv4/IPv6 adress(es)): hostname:port
+    # For example: 0.0.0.0:9999, [::]:9999, localhost:9999
+    hosts:
+      - 0.0.0.0:{{ if .Values.config.server.ssl -}}8443{{- else -}}8080{{- end }}
+      - "[::]:{{ if .Values.config.server.ssl -}}8443{{- else -}}8080{{- end }}"
+    #
+    # SSL private key
+    key: /secret/radicale.key.pem
+    #
+    # Max parallel connections
+    max_connections: 8
+    #
+    # Max size of request body (bytes)
+    max_content_length: 100000000
+    #
+    # SSL flag, enable HTTPS protocol
+    ssl: false
+    #
+    # Socket timeout (seconds)
+    timeout: 30
+  #
+  #
+  storage:
+    #
+    # Folder for storing local collections, created if not present
+    filesystem_folder: /data/collections
+    #
+    # Command that is run after changes to storage
+    # Example: ([ -d .git ] || git init) && git add -A && (git diff --cached --quiet || git commit -m "Changes by \"%(user)s\"")
+    hook: null
+    #
+    # Delete sync token that are older (seconds)
+    max_sync_token_age: 2592000
+    #
+    # Create predefined user collections
+    #
+    # json format:
+    #
+    #  {
+    #    "def-addressbook": {
+    #       "D:displayname": "Personal Address Book",
+    #       "tag": "VADDRESSBOOK"
+    #    },
+    #    "def-calendar": {
+    #       "C:supported-calendar-component-set": "VEVENT,VJOURNAL,VTODO",
+    #       "D:displayname": "Personal Calendar",
+    #       "tag": "VCALENDAR"
+    #    }
+    #  }
+    #
+    predefined_collections: []
+    #
+    # Skip broken item instead of triggering an exception
+    skip_broken_item: true
+    #
+    # Storage backend
+    # Value: multifilesystem | multifilesystem_nolock
+    type: multifilesystem
+  tls:
+    enable: true
+  #
+  #
+  web:
+    #
+    # Web interface backend
+    # Value: none | internal
+    type: internal
+configMap:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-config"
+deployment:
+  annotations: {}
+  autoscaling:
+    enable: false
+    maxReplicas: 100
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 80
+  labels: {}
+  name: "{{ .Values.common.name }}-deploy"
+  replicas: 1
+environmentVars: {}
+image:
+  pullPolicy: IfNotPresent
+  repository: tomsquest/docker-radicale
+  tag: "{{ .Chart.AppVersion }}"
+ingress:
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  class: nginx
+  enable: true
+  labels: {}
+  name: "{{ .Values.common.name }}-ingress"
+livenessProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /
+    port: http
+    scheme: "{{ if .Values.config.server.ssl -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 5
+  periodSeconds: 5
+persistentVolume:
+  annotations: {}
+  create: true
+  labels: {}
+  name: "{{ .Values.common.name }}-pv"
+  reclaimPolicy: Delete
+  volumeMode: Filesystem
+persistentVolumeClaim:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pvc"
+pod:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-pod"
+readinessProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /
+    port: http
+    scheme: "{{ if .Values.config.server.ssl -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 5
+  periodSeconds: 5
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+scripts:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-scripts"
+secret:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-secret"
+securityContext:
+  fsGroup: 2999
+  fsGroupChangePolicy: OnRootMismatch
+  runAsGroup: 2999
+  runAsUser: 2999
+service:
+  annotations: {}
+  labels: {}
+  name: "{{ .Values.common.name }}-service"
+  portName: http
+  ports:
+    - containerPort: 8080
+      name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+      when: "{{ not (.Values.config.server.ssl | default false) }}"
+    - containerPort: 8443
+      name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+      when: "{{ .Values.config.server.ssl | default false }}"
+  selectors: "{{ mustMerge .Values.pod.labels .Values.common.labels | toYaml }}"
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: true
+  labels: {}
+  name: "{{ .Values.common.name }}-sa"
+startupProbe:
+  failureThreshold: 20
+  httpGet:
+    path: /
+    port: http
+    scheme: "{{ if .Values.config.server.ssl -}}HTTPS{{- else -}}HTTP{{- end }}"
+  initialDelaySeconds: 5
+  periodSeconds: 5
+storage:
+  accessModes:
+    - ReadWriteMany
+  local:
+    basePath: /data
+    path: "{{ .Values.storage.local.basePath }}/{{ .Values.common.name }}"
+  space: 10Gi
+  storageClassName: local-storage
+  type: local
+storageClass:
+  annotations: {}
+  create: false
+  labels: {}
+  name: "{{ .Values.storage.storageClassName }}"
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+volumeMounts:
+  - mountPath: '{{ .Values.config.configFile | default "/etc/radicale/config" }}'
+    name: config
+    subPath: config
+  - mountPath: '{{ .Values.config.storage.filesystem_folder | default "/var/lib/radicale/collections" }}'
+    name: pv
+    subPath: collections
+  - mountPath: '{{ .Values.config.auth.htpasswd_filename | default "/etc/radicale/users" }}'
+    name: secret
+    subPath: users
+  - mountPath: /secrets/ssl/rsa
+    name: certs
+    readOnly: true
+    when: "{{ .Values.config.tls.enable }}"
+  - mountPath: /secrets/ssl/rsa
+    name: pv
+    readOnly: true
+    subPath: certs
+    when: "{{ not .Values.config.tls.enable }}"
+volumes:
+  - configMap:
+      name: "{{ .Values.common.name }}-config"
+    name: config
+  - name: pv
+    persistentVolumeClaim:
+      claimName: "{{ tpl .Values.persistentVolumeClaim.name . }}"
+  - name: secret
+    secret:
+      secretName: "{{ tpl .Values.secret.name . }}"
+    when: "{{ .Values.config.tls.enable }}"
+  - name: certs
+    secret:
+      secretName: "{{ tpl .Values.certSecret.name . }}"
+    when: "{{ .Values.config.tls.enable }}"
+  - emptyDir: {}
+    name: tmp-files

@@ -1,0 +1,5 @@
+{{- include "common-library.deployment" (dict "globals" . "override" "radicale.deployment") -}}
+{{- define "radicale.deployment" -}}
+{{- end -}}
+{{- define "radicale.container" -}}
+{{- end -}}

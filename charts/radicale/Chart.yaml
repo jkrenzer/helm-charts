@@ -1,0 +1,15 @@
+apiVersion: v2
+appVersion: 3.3.0.1
+dependencies:
+  - name: common-library
+    repository: file://../common-library
+    version: 0.0.1
+description: A Helm chart for radicale
+home: https://github.com/jkrenzer/helm-charts
+maintainers:
+  - email: joern.krenzer@gmx.de
+    name: jkrenzer
+    url: https://github.com/jkrenzer
+name: radicale
+type: application
+version: 0.0.1

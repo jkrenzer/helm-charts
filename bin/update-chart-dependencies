@@ -1,0 +1,17 @@
+#!/bin/bash -e
+directories=${1:-${WORKSPACE_DIR:-.}/charts/*}
+files=("Chart.yaml" "values.yaml")
+
+# Check if helm is installed
+if ! command -v helm &> /dev/null; then
+  echo "helm command not found. Please install helm to proceed."
+  exit 1
+fi
+
+parent_dir=${WORKSPACE_DIR:-.}/charts
+echo "Updating all charts in directory $parent_dir"
+for dir in $directories; do
+  echo "Updating chart directory $dir"
+  helm dependency update $dir
+done
+echo "All charts updated"

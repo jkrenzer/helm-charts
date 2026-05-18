@@ -1,17 +1,5 @@
 {{ if .Values.certManager.enable }}
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: {{ tpl .Values.cert.name . }}
-  namespace: {{ .Release.Namespace }}
-  labels: {{ mustMerge .Values.cert.labels .Values.common.labels | toYaml | nindent 4 }}
-  annotations: {{ mustMerge .Values.cert.annotations .Values.common.annotations | toYaml | nindent 4 }}
-spec:
-  commonName: {{ .Values.config.domain }}
-  dnsNames: {{ mustPrepend .Values.cert.dnsNames .Values.config.domain | toYaml | nindent 4 }}
-  issuerRef:
-    name: {{ tpl ( required "You need to set .Values.cert.issuer to use cert-manager!" .Values.cert.issuer ) . }}
-  secretName: {{ tpl .Values.certSecret.name . }}
-  secretTemplate: {{ tpl ( .Values.certSecret.template ) . | nindent 4 }}
-{{ end }}
+{{- include "common-library.certificate" (dict "globals" . "override" "keycloak.certificate") -}}
+{{- end -}}
+{{- define "keycloak.certificate" -}}
+{{- end -}}
